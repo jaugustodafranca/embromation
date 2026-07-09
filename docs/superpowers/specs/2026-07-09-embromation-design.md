@@ -1,10 +1,14 @@
-# Design: Tradutor local de texto selecionado (nome provisório: local-translator)
+# Design: Embromation — tradutor local de texto selecionado
 
 **Data:** 2026-07-09
 **Status:** Aguardando revisão do autor
 **Protótipo interativo:** https://claude.ai/code/artifact/46ddca1b-5bcd-4fa2-80d9-39f8b7dabb9a
 
-> O nome definitivo do app/repositório será decidido antes da publicação no GitHub.
+> **Embromation** (*embromar* + *-ation*): a arte brasileira de fingir que fala
+> inglês. O app existe para acabar com ela. Tagline: "Chega de embromation."
+> Abertura do README em inglês: *"Embromation (n.): the ancient Brazilian art of
+> pretending you speak English. This app ends it."*
+>
 > Este documento está em português para facilitar a revisão; será traduzido para
 > inglês quando o repositório for tornado público.
 
@@ -35,6 +39,7 @@ visível na tela.
 | Tom/Glossário | Configuração global única | Seletor de tom (neutro/formal/casual) + instruções livres + lista de termos que nunca devem ser traduzidos. Perfis múltiplos ficam para depois se houver demanda. |
 | Estrutura | App + Swift Package interno (`TranslatorCore`) | Core testável e reusável sem dependência de UI; convida contribuições. |
 | Licença | MIT | Padrão para utilitários open-source. |
+| Nome | Embromation | Piada que funciona em PT e EN; `embromation.app` disponível ($9,99/ano — comprar antes de publicar); GitHub sem colisões relevantes. Alternativas avaliadas e disponíveis à época: Traduza, Traduzão, Dragoman, Entendo, Portunhol, Arranha. |
 
 **Limitação assumida:** MLX exige Apple Silicon. Macs Intel não são suportados;
 o app detecta e explica no launch.
@@ -116,6 +121,10 @@ inatividade, iniciar no login. Persistência via `UserDefaults`
 Três passos no primeiro launch: boas-vindas → permissão de Acessibilidade
 (botão para System Settings, com verificação de estado) → download do modelo
 com barra de progresso. Termina ensinando o atalho padrão (⌥⌘T).
+
+Easter egg obrigatório: a frase de demonstração da primeira tradução (após o
+download do modelo) é **"The book is on the table."** — todo brasileiro entende
+a piada.
 
 ## 5. Fluxo principal
 
