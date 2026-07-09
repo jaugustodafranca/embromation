@@ -1,0 +1,25 @@
+<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#13A796"/>
+      <stop offset="1" stop-color="#0A6459"/>
+    </linearGradient>
+  </defs>
+  <!-- macOS squircle -->
+  <rect x="32" y="32" width="448" height="448" rx="104" fill="url(#bg)"/>
+  <!-- speech bubble, tail bottom-left -->
+  <path d="M256 118
+           C 172 118 108 166 108 230
+           C 108 270 132 303 170 322
+           L 148 384
+           C 145 393 154 400 162 395
+           L 236 349
+           C 243 350 249 350 256 350
+           C 340 350 404 294 404 230
+           C 404 166 340 118 256 118 Z" fill="#FFFFFF"/>
+  <!-- "ã": the sound of Brazilian confusion; the tilde is the embromation squiggle -->
+  <path d="M202 202 C 216 180 238 180 252 198 C 266 216 288 216 302 194"
+        stroke="#0B6B61" stroke-width="25" stroke-linecap="round" fill="none"/>
+  <circle cx="252" cy="272" r="35" stroke="#0B6B61" stroke-width="25" fill="none"/>
+  <path d="M287 233 L287 309" stroke="#0B6B61" stroke-width="25" stroke-linecap="round"/>
+</svg>
