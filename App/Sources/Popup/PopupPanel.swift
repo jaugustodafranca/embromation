@@ -1,4 +1,3 @@
-// App/Sources/Popup/PopupPanel.swift
 import AppKit
 
 /// Floating panel that never steals focus from the host app.

@@ -1,15 +1,3 @@
-// App/Sources/Engine/ModelStore.swift
-//
-// API-drift note: the task brief targeted the 2025 mlx-swift-examples API
-// (`HubApi`, `Hub.Repo`, `LLMModelFactory.shared.loadContainer(hub:configuration:progressHandler:)`).
-// As of this package resolution, MLXLLM/MLXLMCommon have moved out of
-// mlx-swift-examples entirely into a new package (ml-explore/mlx-swift-lm),
-// and the Hugging Face download stack was rewritten around `HubClient` /
-// `HubCache` (package `swift-huggingface`, module `HuggingFace`) plus a
-// provider-agnostic `Downloader` / `TokenizerLoader` pair in `MLXLMCommon`.
-// See task-10-report.md for the full before/after. The generation-side API
-// (`ModelContainer.perform`, `UserInput`, `Chat.Message`, `MLXLMCommon.generate`,
-// `.chunk`) is unchanged from the brief.
 import Foundation
 import HuggingFace
 import MLXHuggingFace
@@ -73,21 +61,14 @@ final class ModelStore: ObservableObject {
                 configuration: ModelConfiguration(id: selectedSpec.id)
             ) { progress in
                 Task { @MainActor in
-                    // Monotonic guard: progress callbacks hop to the main actor via an
-                    // unordered `Task`, so a late `.downloading` update can otherwise land
-                    // after the terminal state below (`.ready` via refresh(), or `.missing`
-                    // on failure) and leave the UI stuck showing a download. Only admit the
-                    // update while we're actually in `.downloading` — the synchronous
-                    // `state = .downloading(0)` set above (before this loader call) is what
-                    // admits the very first tick.
+                    // Progress hops are unordered; a late tick must never override a
+                    // terminal state (.ready / .missing), so only update mid-download.
                     if case .downloading = self.state {
                         self.state = .downloading(progress.fractionCompleted)
                     }
                 }
             }
-            // Re-derive from disk for the CURRENTLY selected spec rather than assuming
-            // this download's spec is still selected — the user may have switched models
-            // mid-download.
+            // Re-derive from disk: the user may have switched models mid-download.
             refresh()
         } catch {
             lastErrorMessage = error.localizedDescription

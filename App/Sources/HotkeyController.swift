@@ -1,4 +1,3 @@
-// App/Sources/HotkeyController.swift
 import KeyboardShortcuts
 
 extension KeyboardShortcuts.Name {

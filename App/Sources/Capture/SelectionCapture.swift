@@ -1,4 +1,3 @@
-// App/Sources/Capture/SelectionCapture.swift
 import AppKit
 import ApplicationServices
 
@@ -8,6 +7,10 @@ protocol SelectionCapturing: Sendable {
 }
 
 struct SelectionCapture: SelectionCapturing {
+    /// The ⌘C fallback polls the pasteboard every 10ms for up to 300ms.
+    private static let pollInterval: Duration = .milliseconds(10)
+    private static let maxPollAttempts = 30
+
     func captureSelectedText() async -> String? {
         if let viaAX = axSelectedText(), !viaAX.isEmpty {
             return viaAX
@@ -30,17 +33,17 @@ struct SelectionCapture: SelectionCapturing {
         return selectedRef as? String
     }
 
-    /// Fallback: simulate ⌘C, poll pasteboard changeCount every 10ms (max 300ms), restore clipboard.
+    /// Fallback: simulate ⌘C, poll the pasteboard changeCount, restore the clipboard.
     private func copyBasedCapture() async -> String? {
         let pasteboard = NSPasteboard.general
-        let snapshot = snapshotPasteboardItems(pasteboard)
+        let snapshot = pasteboard.snapshotItems()
         let startCount = pasteboard.changeCount
 
-        postKeystroke(keyCode: 8, flags: .maskCommand) // 8 = "c"
+        Keystroke.postCommand(Keystroke.c)
 
         var changed = false
-        for _ in 0..<30 {
-            try? await Task.sleep(for: .milliseconds(10))
+        for _ in 0..<Self.maxPollAttempts {
+            try? await Task.sleep(for: Self.pollInterval)
             if pasteboard.changeCount != startCount {
                 changed = true
                 break
@@ -49,32 +52,7 @@ struct SelectionCapture: SelectionCapturing {
         guard changed else { return nil }
         let captured = pasteboard.string(forType: .string)
 
-        pasteboard.clearContents()
-        if !snapshot.isEmpty {
-            pasteboard.writeObjects(snapshot)
-        }
+        pasteboard.restore(from: snapshot)
         return captured
-    }
-
-    private func snapshotPasteboardItems(_ pasteboard: NSPasteboard) -> [NSPasteboardItem] {
-        (pasteboard.pasteboardItems ?? []).map { item in
-            let copy = NSPasteboardItem()
-            for type in item.types {
-                if let data = item.data(forType: type) {
-                    copy.setData(data, forType: type)
-                }
-            }
-            return copy
-        }
-    }
-
-    private func postKeystroke(keyCode: CGKeyCode, flags: CGEventFlags) {
-        let source = CGEventSource(stateID: .combinedSessionState)
-        let down = CGEvent(keyboardEventSource: source, virtualKey: keyCode, keyDown: true)
-        let up = CGEvent(keyboardEventSource: source, virtualKey: keyCode, keyDown: false)
-        down?.flags = flags
-        up?.flags = flags
-        down?.post(tap: .cghidEventTap)
-        up?.post(tap: .cghidEventTap)
     }
 }

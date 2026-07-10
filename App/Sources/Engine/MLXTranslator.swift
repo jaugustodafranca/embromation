@@ -1,4 +1,3 @@
-// App/Sources/Engine/MLXTranslator.swift
 import Foundation
 import MLXLMCommon
 import MLXLLM
@@ -59,9 +58,6 @@ actor MLXTranslator: StreamingTranslator {
         let id = modelID()
         if let container, containerModelID == id { return container }
         container = nil // release old model before loading a different one
-        // API-drift: loadContainer(hub:configuration:progressHandler:) no longer exists;
-        // the current MLXLMCommon loads via a provider-agnostic Downloader/TokenizerLoader
-        // pair. See ModelStore.swift for the full note.
         let loaded = try await LLMModelFactory.shared.loadContainer(
             from: ModelStore.downloader,
             using: ModelStore.tokenizerLoader,

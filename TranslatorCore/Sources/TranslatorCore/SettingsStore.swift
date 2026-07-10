@@ -14,9 +14,13 @@ public struct SettingsData: Codable, Equatable, Sendable {
 }
 
 public extension SettingsData {
+    /// UserDefaults key for the persisted settings blob. Bump the suffix on
+    /// breaking schema changes.
+    static let storageKey = "settings.v1"
+
     /// Thread-safe snapshot of persisted settings, for non-main-actor readers.
     static func snapshot(from defaults: UserDefaults = .standard) -> SettingsData {
-        guard let raw = defaults.data(forKey: "settings.v1"),
+        guard let raw = defaults.data(forKey: storageKey),
               let decoded = try? JSONDecoder().decode(SettingsData.self, from: raw) else {
             return SettingsData()
         }
@@ -31,20 +35,14 @@ public final class SettingsStore: ObservableObject {
     }
 
     private let defaults: UserDefaults
-    private static let key = "settings.v1"
 
     public init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
-        if let raw = defaults.data(forKey: Self.key),
-           let decoded = try? JSONDecoder().decode(SettingsData.self, from: raw) {
-            self.data = decoded
-        } else {
-            self.data = SettingsData()
-        }
+        self.data = SettingsData.snapshot(from: defaults)
     }
 
     private func persist() {
         guard let raw = try? JSONEncoder().encode(data) else { return }
-        defaults.set(raw, forKey: Self.key)
+        defaults.set(raw, forKey: SettingsData.storageKey)
     }
 }

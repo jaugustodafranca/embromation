@@ -1,4 +1,3 @@
-// App/Sources/Popup/PopupView.swift
 import SwiftUI
 import TranslatorCore
 
@@ -69,12 +68,15 @@ struct PopupView: View {
         }
     }
 
+    private var hasFinishedTranslation: Bool { model.phase == .done }
+    private var hasTranslation: Bool { model.phase == .streaming || model.phase == .done }
+
     private var footer: some View {
         HStack(spacing: 8) {
             Button(L10n.t("popup.copy")) { model.onCopy?() }
-                .disabled(model.phase != .done)
+                .disabled(!hasFinishedTranslation)
             Button(L10n.t("popup.replace")) { model.onReplace?() }
-                .disabled(model.phase != .done)
+                .disabled(!hasFinishedTranslation)
             Picker("", selection: Binding(
                 get: { model.target },
                 set: { model.onRetarget?($0) }
@@ -85,7 +87,7 @@ struct PopupView: View {
             }
             .labelsHidden()
             .frame(width: 150)
-            .disabled(!(model.phase == .streaming || model.phase == .done))
+            .disabled(!hasTranslation)
             Spacer()
             Text(L10n.t("popup.esc")).font(.caption2).foregroundStyle(.tertiary)
         }

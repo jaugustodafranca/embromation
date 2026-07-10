@@ -1,4 +1,3 @@
-// App/Sources/TranslationCoordinator.swift
 import AppKit
 import TranslatorCore
 
