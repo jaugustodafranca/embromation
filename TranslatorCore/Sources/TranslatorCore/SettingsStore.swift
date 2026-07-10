@@ -5,6 +5,7 @@ public struct SettingsData: Codable, Equatable, Sendable {
     public var pair = LanguagePair(primary: .portuguese, secondary: .english)
     public var tone: Tone = .neutral
     public var customInstructions = ""
+    public var correctionInstructions = ""
     public var glossary: [String] = []
     public var selectedModelID = ModelCatalog.default.id
     public var unloadAfterMinutes = 10
@@ -14,7 +15,7 @@ public struct SettingsData: Codable, Equatable, Sendable {
     public init() {}
 
     private enum CodingKeys: String, CodingKey {
-        case pair, tone, customInstructions, glossary,
+        case pair, tone, customInstructions, correctionInstructions, glossary,
              selectedModelID, unloadAfterMinutes, didOnboard,
              correctionReplacesDirectly
     }
@@ -27,6 +28,7 @@ public struct SettingsData: Codable, Equatable, Sendable {
         pair = try c.decodeIfPresent(LanguagePair.self, forKey: .pair) ?? defaults.pair
         tone = try c.decodeIfPresent(Tone.self, forKey: .tone) ?? defaults.tone
         customInstructions = try c.decodeIfPresent(String.self, forKey: .customInstructions) ?? defaults.customInstructions
+        correctionInstructions = try c.decodeIfPresent(String.self, forKey: .correctionInstructions) ?? defaults.correctionInstructions
         glossary = try c.decodeIfPresent([String].self, forKey: .glossary) ?? defaults.glossary
         selectedModelID = try c.decodeIfPresent(String.self, forKey: .selectedModelID) ?? defaults.selectedModelID
         unloadAfterMinutes = try c.decodeIfPresent(Int.self, forKey: .unloadAfterMinutes) ?? defaults.unloadAfterMinutes
@@ -53,17 +55,32 @@ public extension SettingsData {
 @MainActor
 public final class SettingsStore: ObservableObject {
     @Published public var data: SettingsData {
-        didSet { persist() }
+        didSet { schedulePersist() }
     }
 
     private let defaults: UserDefaults
+    private var persistTask: Task<Void, Never>?
 
     public init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
         self.data = SettingsData.snapshot(from: defaults)
     }
 
-    private func persist() {
+    /// Persistence is debounced so per-keystroke edits (e.g. the instructions
+    /// field) don't JSON-encode and hit the disk on every character.
+    private func schedulePersist() {
+        persistTask?.cancel()
+        persistTask = Task { [weak self] in
+            try? await Task.sleep(for: .milliseconds(300))
+            guard !Task.isCancelled else { return }
+            self?.flush()
+        }
+    }
+
+    /// Writes pending changes immediately. Call on app termination.
+    public func flush() {
+        persistTask?.cancel()
+        persistTask = nil
         guard let raw = try? JSONEncoder().encode(data) else { return }
         defaults.set(raw, forKey: SettingsData.storageKey)
     }

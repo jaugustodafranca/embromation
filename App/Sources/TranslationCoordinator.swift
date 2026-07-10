@@ -133,9 +133,12 @@ final class TranslationCoordinator {
             source = detected ?? settings.data.pair.primary
             target = source
         }
+        let instructions = mode == .correct
+            ? settings.data.correctionInstructions
+            : settings.data.customInstructions
         let request = TranslationRequest(text: text, source: source, target: target,
                                          tone: settings.data.tone,
-                                         customInstructions: settings.data.customInstructions,
+                                         customInstructions: instructions,
                                          glossary: settings.data.glossary,
                                          mode: mode)
         if direct {
@@ -204,6 +207,17 @@ final class TranslationCoordinator {
             return
         }
         lastRequest = request
+        // The model can drop or truncate emoji (a 🇧🇷 flag coming back as a
+        // lone 🇧). Replacing silently would ship the mangled text, so divert
+        // to the popup for review; the user can accept with ⌘⏎ or regenerate.
+        let missing = EmojiPreservation.missingEmoji(input: request.text, output: corrected)
+        guard missing.isEmpty else {
+            popup.model.sourceCode = request.source.code
+            popup.model.text = corrected
+            popup.model.phase = .done
+            popup.show()
+            return
+        }
         // hide(), not dismiss(): onDismiss cancels currentTask — which is the
         // task running THIS function; cancelling it collapses the replace
         // settle delay and races the clipboard restore against the paste.

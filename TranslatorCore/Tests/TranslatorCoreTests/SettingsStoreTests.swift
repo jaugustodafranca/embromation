@@ -22,6 +22,7 @@ final class SettingsStoreTests: XCTestCase {
         store.data.tone = .formal
         store.data.glossary = ["deploy", "commit"]
         store.data.didOnboard = true
+        store.flush()
 
         let reloaded = SettingsStore(defaults: UserDefaults(suiteName: suite)!)
         XCTAssertEqual(reloaded.data.tone, .formal)
@@ -47,5 +48,16 @@ final class SettingsStoreTests: XCTestCase {
         XCTAssertEqual(decoded.unloadAfterMinutes, 5)
         XCTAssertTrue(decoded.didOnboard)
         XCTAssertFalse(decoded.correctionReplacesDirectly)
+        XCTAssertEqual(decoded.correctionInstructions, "")
+    }
+
+    @MainActor
+    func testDebouncedPersistLandsWithoutExplicitFlush() async {
+        let suite = "test-\(UUID().uuidString)"
+        let store = SettingsStore(defaults: UserDefaults(suiteName: suite)!)
+        store.data.tone = .casual
+        try? await Task.sleep(for: .milliseconds(600))
+        let reloaded = SettingsStore(defaults: UserDefaults(suiteName: suite)!)
+        XCTAssertEqual(reloaded.data.tone, .casual)
     }
 }
