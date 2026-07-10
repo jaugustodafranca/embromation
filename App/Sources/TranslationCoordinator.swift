@@ -9,6 +9,7 @@ final class TranslationCoordinator {
     private let popup: PopupController
     private var currentTask: Task<Void, Never>?
     private var lastCapturedText = ""
+    private var lastRequest: TranslationRequest?
     private var pendingClipboardChangeCount: Int?
 
     init(settings: SettingsStore, capture: SelectionCapturing,
@@ -19,7 +20,15 @@ final class TranslationCoordinator {
         self.popup = popup
         popup.onDismiss = { [weak self] in self?.currentTask?.cancel() }
         popup.model.onRetarget = { [weak self] lang in self?.retarget(lang) }
-        popup.model.onRetry = { [weak self] in self?.translateSelection() }
+        popup.model.onRetry = { [weak self] in
+            guard let self else { return }
+            if self.popup.model.isCorrection {
+                self.correctSelection()
+            } else {
+                self.translateSelection()
+            }
+        }
+        popup.model.onRefine = { [weak self] feedback in self?.refine(feedback) }
         popup.model.onCopy = { [weak self] in
             guard let self else { return }
             let pasteboard = NSPasteboard.general
@@ -37,23 +46,60 @@ final class TranslationCoordinator {
 
     func translateSelection() {
         currentTask?.cancel()
-        currentTask = Task { await run() }
+        currentTask = Task { await run(mode: .translate) }
+    }
+
+    func correctSelection() {
+        currentTask?.cancel()
+        currentTask = Task { await run(mode: .correct) }
+    }
+
+    func refine(_ feedback: String) {
+        guard var request = lastRequest, popup.model.phase == .done else { return }
+        request.refinement = Refinement(previousOutput: popup.model.text, feedback: feedback)
+        currentTask?.cancel()
+        let req = request
+        currentTask = Task { await stream(req) }
     }
 
     func retarget(_ language: Language) {
         guard !lastCapturedText.isEmpty else { return }
+        let detected = LanguageDetector().detect(lastCapturedText)
+        let source = detected ?? settings.data.pair.secondary
+        let request = TranslationRequest(text: lastCapturedText, source: source, target: language,
+                                         tone: settings.data.tone,
+                                         customInstructions: settings.data.customInstructions,
+                                         glossary: settings.data.glossary,
+                                         mode: .translate)
         currentTask?.cancel()
-        let text = lastCapturedText
-        currentTask = Task { await stream(text: text, forcedTarget: language) }
+        currentTask = Task { await stream(request) }
     }
 
-    private func run() async {
-        popup.model.phase = .working
-        popup.model.text = ""
-        popup.show()
+    private func run(mode: TranslationMode) async {
+        // Direct-replace correction never shows the popup while capturing —
+        // it only surfaces if something goes wrong (see AX guard / directCorrect).
+        let direct = mode == .correct && settings.data.correctionReplacesDirectly
+        // Set up-front (not just inside stream()/directCorrect()) so an early
+        // return (no selection / no permission) doesn't leave a stale value
+        // from a previous run's mode on screen.
+        popup.model.isCorrection = (mode == .correct)
+        if !direct {
+            popup.model.phase = .working
+            popup.model.text = ""
+            popup.show()
+        } else {
+            // Direct mode shows the popup only on failure — hide any stale
+            // panel and reset presentation state (phase change also disables
+            // the popup shortcuts).
+            popup.hide()
+            popup.model.phase = .working
+            popup.model.sourceCode = ""
+            popup.model.text = ""
+        }
 
         guard AXIsProcessTrusted() else {
             popup.model.phase = .permissionNeeded
+            popup.show()
             return
         }
         var text = await capture.captureSelectedText() ?? ""
@@ -69,33 +115,48 @@ final class TranslationCoordinator {
             if text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                 pendingClipboardChangeCount = pasteboard.changeCount
                 popup.model.phase = .noSelection
+                popup.show()
                 return
             }
         }
         pendingClipboardChangeCount = nil
         lastCapturedText = text
-        await stream(text: text, forcedTarget: nil)
+
+        let detected = LanguageDetector().detect(text)
+        let source: Language
+        let target: Language
+        switch mode {
+        case .translate:
+            target = LanguagePairResolver().target(forDetected: detected, pair: settings.data.pair)
+            source = detected ?? settings.data.pair.secondary
+        case .correct:
+            source = detected ?? settings.data.pair.primary
+            target = source
+        }
+        let request = TranslationRequest(text: text, source: source, target: target,
+                                         tone: settings.data.tone,
+                                         customInstructions: settings.data.customInstructions,
+                                         glossary: settings.data.glossary,
+                                         mode: mode)
+        if direct {
+            await directCorrect(request)
+        } else {
+            await stream(request)
+        }
     }
 
-    private func stream(text: String, forcedTarget: Language?) async {
+    private func stream(_ request: TranslationRequest) async {
         guard !Task.isCancelled else { return }
-        let detected = LanguageDetector().detect(text)
-        let target = forcedTarget
-            ?? LanguagePairResolver().target(forDetected: detected, pair: settings.data.pair)
-        let source = detected ?? settings.data.pair.secondary
-
-        popup.model.sourceCode = source.code
-        popup.model.target = target
+        lastRequest = request
+        popup.model.isCorrection = (request.mode == .correct)
+        popup.model.sourceCode = request.source.code
+        popup.model.target = request.target
         popup.model.text = ""
         // Stay in .working (spinner) until the first chunk arrives — model
         // load and prompt processing take seconds on a cold start, and a
         // blank streaming body reads as frozen.
         popup.model.phase = .working
 
-        let request = TranslationRequest(text: text, source: source, target: target,
-                                         tone: settings.data.tone,
-                                         customInstructions: settings.data.customInstructions,
-                                         glossary: settings.data.glossary)
         do {
             for try await chunk in translator.translate(request) {
                 try Task.checkCancellation()
@@ -115,5 +176,40 @@ final class TranslationCoordinator {
         } catch {
             popup.model.phase = .failed(error.localizedDescription)
         }
+    }
+
+    private func directCorrect(_ request: TranslationRequest) async {
+        var result = ""
+        do {
+            for try await chunk in translator.translate(request) {
+                try Task.checkCancellation()
+                result += chunk
+            }
+        } catch is CancellationError {
+            return
+        } catch {
+            popup.model.isCorrection = true
+            popup.model.sourceCode = request.source.code
+            popup.model.phase = .failed(error.localizedDescription)
+            popup.show()
+            return
+        }
+        guard !Task.isCancelled else { return }
+        let corrected = result.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !corrected.isEmpty else {
+            popup.model.isCorrection = true
+            popup.model.sourceCode = request.source.code
+            popup.model.phase = .failed(L10n.t("popup.empty_response"))
+            popup.show()
+            return
+        }
+        lastRequest = request
+        // hide(), not dismiss(): onDismiss cancels currentTask — which is the
+        // task running THIS function; cancelling it collapses the replace
+        // settle delay and races the clipboard restore against the paste.
+        popup.hide()
+        // Detached so a superseding run's cancel can't collapse the paste
+        // settle delay (same shape as onReplace).
+        await Task { await SelectionReplacer().replaceSelection(with: corrected) }.value
     }
 }

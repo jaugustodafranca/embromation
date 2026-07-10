@@ -19,6 +19,8 @@ final class ModelStore: ObservableObject {
     @Published var lastErrorMessage: String?
 
     private let settings: SettingsStore
+    private var downloadTask: Task<Void, Never>?
+    private var downloadGeneration = 0
 
     /// All model files live under Application Support, never in the repo.
     static let cache = HubCache(cacheDirectory: URL.applicationSupportDirectory
@@ -51,9 +53,28 @@ final class ModelStore: ObservableObject {
     }
 
     /// Downloads (and warms) the selected model. Progress is published for the UI.
-    func download() async {
-        state = .downloading(0)
-        lastErrorMessage = nil
+    func download() {
+        guard case .downloading = state else {
+            // A model switch can knock `state` out of .downloading while an
+            // old download still runs — cancel it and invalidate its writes.
+            downloadTask?.cancel()
+            downloadGeneration += 1
+            let generation = downloadGeneration
+            state = .downloading(0)
+            lastErrorMessage = nil
+            downloadTask = Task { await performDownload(generation: generation) }
+            return
+        }
+    }
+
+    func cancelDownload() {
+        downloadTask?.cancel()
+        downloadTask = nil
+        downloadGeneration += 1
+        refresh()
+    }
+
+    private func performDownload(generation: Int) async {
         do {
             _ = try await LLMModelFactory.shared.loadContainer(
                 from: Self.downloader,
@@ -61,16 +82,20 @@ final class ModelStore: ObservableObject {
                 configuration: ModelConfiguration(id: selectedSpec.id)
             ) { progress in
                 Task { @MainActor in
-                    // Progress hops are unordered; a late tick must never override a
-                    // terminal state (.ready / .missing), so only update mid-download.
-                    if case .downloading = self.state {
-                        self.state = .downloading(progress.fractionCompleted)
-                    }
+                    guard generation == self.downloadGeneration,
+                          case .downloading = self.state else { return }
+                    self.state = .downloading(progress.fractionCompleted)
                 }
             }
+            guard generation == downloadGeneration else { return }
             // Re-derive from disk: the user may have switched models mid-download.
             refresh()
         } catch {
+            guard generation == downloadGeneration else { return }
+            if error is CancellationError || (error as? URLError)?.code == .cancelled {
+                // cancelDownload() already refreshed; nothing to mutate here.
+                return
+            }
             lastErrorMessage = error.localizedDescription
             state = .missing
         }

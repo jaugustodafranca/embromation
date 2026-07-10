@@ -8,7 +8,8 @@ public struct FakeTranslator: StreamingTranslator {
     }
 
     public func translate(_ request: TranslationRequest) -> AsyncThrowingStream<String, Error> {
-        let words = canned.split(separator: " ").map(String.init)
+        let text = request.refinement.map { "\(canned) [\($0.feedback)]" } ?? canned
+        let words = text.split(separator: " ").map(String.init)
         let delay = wordDelay
         return AsyncThrowingStream { continuation in
             Task {
