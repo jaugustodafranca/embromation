@@ -80,6 +80,11 @@ final class TranslationCoordinator {
             popup.model.phase = .working
             popup.model.text = ""
             popup.show()
+        } else {
+            // Direct mode shows the popup only on failure — clear stale
+            // presentation state so an error renders clean.
+            popup.model.sourceCode = ""
+            popup.model.text = ""
         }
 
         guard AXIsProcessTrusted() else {
