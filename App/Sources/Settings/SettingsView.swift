@@ -107,6 +107,14 @@ private struct CorrectionTab: View {
                 Text(L10n.t("settings.correction_hint"))
                     .font(.caption).foregroundStyle(.secondary)
             }
+            Section(L10n.t("settings.extra_instructions")) {
+                TextField("", text: $settings.data.correctionInstructions,
+                          prompt: Text(L10n.t("settings.correction_instructions_placeholder")),
+                          axis: .vertical)
+                    .labelsHidden()
+                    .lineLimit(4...8)
+                    .multilineTextAlignment(.leading)
+            }
         }
         .formStyle(.grouped)
         .fixedSize(horizontal: false, vertical: true)
