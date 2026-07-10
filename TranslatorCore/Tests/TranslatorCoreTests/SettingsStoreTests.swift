@@ -48,6 +48,7 @@ final class SettingsStoreTests: XCTestCase {
         XCTAssertEqual(decoded.unloadAfterMinutes, 5)
         XCTAssertTrue(decoded.didOnboard)
         XCTAssertFalse(decoded.correctionReplacesDirectly)
+        XCTAssertEqual(decoded.correctionInstructions, "")
     }
 
     @MainActor

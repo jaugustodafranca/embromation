@@ -133,9 +133,12 @@ final class TranslationCoordinator {
             source = detected ?? settings.data.pair.primary
             target = source
         }
+        let instructions = mode == .correct
+            ? settings.data.correctionInstructions
+            : settings.data.customInstructions
         let request = TranslationRequest(text: text, source: source, target: target,
                                          tone: settings.data.tone,
-                                         customInstructions: settings.data.customInstructions,
+                                         customInstructions: instructions,
                                          glossary: settings.data.glossary,
                                          mode: mode)
         if direct {
