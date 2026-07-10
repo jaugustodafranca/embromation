@@ -24,6 +24,7 @@
 "onboarding.granted" = "Concedida";
 "onboarding.download_title" = "Baixando o modelo";
 "onboarding.download_body" = "%@ roda totalmente no seu Mac. Download único.";
+"onboarding.download_progress" = "%d%% de ~%.1f GB";
 "onboarding.model_ready" = "Pronto";
 "onboarding.ready" = "Tudo pronto";
 "onboarding.hint" = "Selecione qualquer texto e aperte ⌥⌘T.";

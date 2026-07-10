@@ -9,6 +9,7 @@ jobs:
   core-tests:
     name: TranslatorCore tests
     runs-on: macos-15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - name: Run tests
@@ -17,6 +18,7 @@ jobs:
   app-build:
     name: App build (arm64, unsigned)
     runs-on: macos-15
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
       - name: Install XcodeGen

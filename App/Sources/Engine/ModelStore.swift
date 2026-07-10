@@ -74,15 +74,21 @@ final class ModelStore: ObservableObject {
             ) { progress in
                 Task { @MainActor in
                     // Monotonic guard: progress callbacks hop to the main actor via an
-                    // unordered `Task`, so a late `.downloading` update can land after
-                    // `state = .ready` below and leave the UI stuck showing a download
-                    // (see task-10-report.md review finding, applied in task-13).
-                    if self.state != .ready {
+                    // unordered `Task`, so a late `.downloading` update can otherwise land
+                    // after the terminal state below (`.ready` via refresh(), or `.missing`
+                    // on failure) and leave the UI stuck showing a download. Only admit the
+                    // update while we're actually in `.downloading` — the synchronous
+                    // `state = .downloading(0)` set above (before this loader call) is what
+                    // admits the very first tick.
+                    if case .downloading = self.state {
                         self.state = .downloading(progress.fractionCompleted)
                     }
                 }
             }
-            state = .ready
+            // Re-derive from disk for the CURRENTLY selected spec rather than assuming
+            // this download's spec is still selected — the user may have switched models
+            // mid-download.
+            refresh()
         } catch {
             lastErrorMessage = error.localizedDescription
             state = .missing
