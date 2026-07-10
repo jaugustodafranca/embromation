@@ -28,4 +28,24 @@ final class SettingsStoreTests: XCTestCase {
         XCTAssertEqual(reloaded.data.glossary, ["deploy", "commit"])
         XCTAssertTrue(reloaded.data.didOnboard)
     }
+
+    @MainActor
+    func testCorrectionFlowDefaultsToPopup() {
+        let defaults = UserDefaults(suiteName: "test-\(UUID().uuidString)")!
+        let store = SettingsStore(defaults: defaults)
+        XCTAssertFalse(store.data.correctionReplacesDirectly)
+    }
+
+    func testDecodingOldBlobWithoutNewKeysKeepsExistingValues() throws {
+        // Blob shape persisted by the MVP (no correctionReplacesDirectly key).
+        let old = """
+        {"pair":{"primary":{"code":"pt","englishName":"Brazilian Portuguese"},"secondary":{"code":"en","englishName":"English"}},"tone":"formal","customInstructions":"tech","glossary":["deploy"],"selectedModelID":"mlx-community/Qwen3-4B-4bit","unloadAfterMinutes":5,"didOnboard":true}
+        """
+        let decoded = try JSONDecoder().decode(SettingsData.self, from: Data(old.utf8))
+        XCTAssertEqual(decoded.tone, .formal)
+        XCTAssertEqual(decoded.glossary, ["deploy"])
+        XCTAssertEqual(decoded.unloadAfterMinutes, 5)
+        XCTAssertTrue(decoded.didOnboard)
+        XCTAssertFalse(decoded.correctionReplacesDirectly)
+    }
 }
