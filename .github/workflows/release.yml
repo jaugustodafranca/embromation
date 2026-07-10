@@ -1,0 +1,113 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write # create the GitHub Release
+
+jobs:
+  release:
+    name: Signed DMG release
+    # macos-26 carries Xcode 26 — same rationale as ci.yml.
+    runs-on: macos-26
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Download Metal toolchain
+        run: |
+          xcodebuild -version
+          if xcodebuild -help 2>/dev/null | grep -q downloadComponent; then
+            xcodebuild -downloadComponent MetalToolchain
+          else
+            echo "Metal toolchain bundled with this Xcode — skipping"
+          fi
+
+      - name: Import signing certificate
+        env:
+          MAC_CERTIFICATE_P12_BASE64: ${{ secrets.MAC_CERTIFICATE_P12_BASE64 }}
+          MAC_CERTIFICATE_PASSWORD: ${{ secrets.MAC_CERTIFICATE_PASSWORD }}
+        run: |
+          KEYCHAIN_PASSWORD=$(uuidgen)
+          security create-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
+          security set-keychain-settings -lut 7200 build.keychain
+          echo "$MAC_CERTIFICATE_P12_BASE64" | base64 --decode > cert.p12
+          security import cert.p12 -k build.keychain \
+            -P "$MAC_CERTIFICATE_PASSWORD" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple: \
+            -s -k "$KEYCHAIN_PASSWORD" build.keychain
+          rm cert.p12
+
+      - name: Generate project
+        run: xcodegen generate
+
+      - name: Cache compiled dependencies
+        uses: actions/cache@v4
+        with:
+          path: .build/DerivedData
+          key: derived-data-release-${{ runner.os }}-${{ hashFiles('project.yml') }}
+          restore-keys: derived-data-release-${{ runner.os }}-
+
+      - name: Build signed Release app
+        run: |
+          xcodebuild -project Embromation.xcodeproj -scheme Embromation \
+            -configuration Release -derivedDataPath .build/DerivedData \
+            -skipMacroValidation -skipPackagePluginValidation build
+          APP=".build/DerivedData/Build/Products/Release/Embromation.app"
+          codesign --verify --deep --strict "$APP"
+          codesign -dvv "$APP" 2>&1 | grep "Developer ID Application"
+
+      - name: Notarize and staple the app
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          APP=".build/DerivedData/Build/Products/Release/Embromation.app"
+          ditto -c -k --keepParent "$APP" Embromation.zip
+          xcrun notarytool submit Embromation.zip --wait \
+            --apple-id "$APPLE_ID" \
+            --password "$APPLE_APP_SPECIFIC_PASSWORD" \
+            --team-id "$APPLE_TEAM_ID"
+          xcrun stapler staple "$APP"
+
+      - name: Build, sign, notarize and staple the DMG
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          APP=".build/DerivedData/Build/Products/Release/Embromation.app"
+          VERSION="${GITHUB_REF_NAME#v}"
+          DMG="Embromation-${VERSION}.dmg"
+          mkdir dmg-root
+          cp -R "$APP" dmg-root/
+          ln -s /Applications dmg-root/Applications
+          hdiutil create -volname "Embromation" -srcfolder dmg-root \
+            -ov -format UDZO "$DMG"
+          codesign --sign "Developer ID Application" "$DMG"
+          xcrun notarytool submit "$DMG" --wait \
+            --apple-id "$APPLE_ID" \
+            --password "$APPLE_APP_SPECIFIC_PASSWORD" \
+            --team-id "$APPLE_TEAM_ID"
+          xcrun stapler staple "$DMG"
+          echo "DMG=$DMG" >> "$GITHUB_ENV"
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          EXTRA=""
+          case "$GITHUB_REF_NAME" in
+            *-*) EXTRA="--prerelease" ;;
+          esac
+          gh release create "$GITHUB_REF_NAME" "$DMG" \
+            --title "Embromation $GITHUB_REF_NAME" \
+            --generate-notes $EXTRA
