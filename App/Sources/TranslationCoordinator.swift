@@ -21,6 +21,19 @@ final class TranslationCoordinator {
         popup.onDismiss = { [weak self] in self?.currentTask?.cancel() }
         popup.model.onRetarget = { [weak self] lang in self?.retarget(lang) }
         popup.model.onRetry = { [weak self] in self?.translateSelection() }
+        popup.model.onCopy = { [weak self] in
+            guard let self else { return }
+            let pasteboard = NSPasteboard.general
+            pasteboard.clearContents()
+            pasteboard.setString(self.popup.model.text, forType: .string)
+            self.popup.dismiss()
+        }
+        popup.model.onReplace = { [weak self] in
+            guard let self else { return }
+            let translation = self.popup.model.text
+            self.popup.dismiss()
+            Task { await SelectionReplacer().replaceSelection(with: translation) }
+        }
     }
 
     func translateSelection() {
