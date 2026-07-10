@@ -197,7 +197,10 @@ final class TranslationCoordinator {
             return
         }
         lastRequest = request
-        popup.dismiss()
+        // hide(), not dismiss(): onDismiss cancels currentTask — which is the
+        // task running THIS function; cancelling it collapses the replace
+        // settle delay and races the clipboard restore against the paste.
+        popup.hide()
         await SelectionReplacer().replaceSelection(with: corrected)
     }
 }
