@@ -19,6 +19,7 @@ final class ModelStore: ObservableObject {
     @Published var lastErrorMessage: String?
 
     private let settings: SettingsStore
+    private var downloadTask: Task<Void, Never>?
 
     /// All model files live under Application Support, never in the repo.
     static let cache = HubCache(cacheDirectory: URL.applicationSupportDirectory
@@ -51,9 +52,22 @@ final class ModelStore: ObservableObject {
     }
 
     /// Downloads (and warms) the selected model. Progress is published for the UI.
-    func download() async {
-        state = .downloading(0)
-        lastErrorMessage = nil
+    func download() {
+        guard case .downloading = state else {
+            state = .downloading(0)
+            lastErrorMessage = nil
+            downloadTask = Task { await performDownload() }
+            return
+        }
+    }
+
+    func cancelDownload() {
+        downloadTask?.cancel()
+        downloadTask = nil
+        refresh()
+    }
+
+    private func performDownload() async {
         do {
             _ = try await LLMModelFactory.shared.loadContainer(
                 from: Self.downloader,
@@ -69,6 +83,8 @@ final class ModelStore: ObservableObject {
                 }
             }
             // Re-derive from disk: the user may have switched models mid-download.
+            refresh()
+        } catch is CancellationError {
             refresh()
         } catch {
             lastErrorMessage = error.localizedDescription

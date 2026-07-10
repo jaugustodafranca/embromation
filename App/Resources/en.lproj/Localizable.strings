@@ -30,7 +30,8 @@
 "onboarding.granted" = "Granted";
 "onboarding.download_title" = "Downloading the model";
 "onboarding.download_body" = "%@ runs entirely on your Mac. One-time download.";
-"onboarding.download_progress" = "%d%% of ~%.1f GB";
+"onboarding.downloading_size" = "Downloading ~%.1f GB — the bar is shy, but bytes are flowing.";
+"onboarding.cancel_download" = "Cancel download";
 "onboarding.model_ready" = "Ready";
 "onboarding.ready" = "All set";
 "onboarding.hint" = "Select any text and press ⌃T to translate — or ⌃G to fix grammar.";
