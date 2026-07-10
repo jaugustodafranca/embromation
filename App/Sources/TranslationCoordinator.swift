@@ -172,6 +172,9 @@ final class TranslationCoordinator {
             if popup.model.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                 popup.model.phase = .failed(L10n.t("popup.empty_response"))
             } else {
+                // Fix half-flags and re-attach trailing emoji the model dropped.
+                popup.model.text = EmojiPreservation.repair(input: request.text,
+                                                            output: popup.model.text)
                 popup.model.phase = .done
             }
         } catch is CancellationError {
@@ -198,7 +201,10 @@ final class TranslationCoordinator {
             return
         }
         guard !Task.isCancelled else { return }
-        let corrected = result.trimmingCharacters(in: .whitespacesAndNewlines)
+        // Fix half-flags and re-attach trailing emoji before judging the result.
+        let corrected = EmojiPreservation.repair(
+            input: request.text,
+            output: result.trimmingCharacters(in: .whitespacesAndNewlines))
         guard !corrected.isEmpty else {
             popup.model.isCorrection = true
             popup.model.sourceCode = request.source.code
