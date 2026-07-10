@@ -17,7 +17,7 @@ demais", "errou o contexto") direto no popup.
 | Decisão | Escolha |
 |---|---|
 | Ação nova | **Corrigir** (Fix grammar): mesmo pipeline, prompt próprio, mesmo idioma do texto |
-| Atalho | Próprio e configurável (recorder), default **⌥⌘G**; item "Fix grammar ⌥⌘G" no menu da barra |
+| Atalhos | Ambos re-padronizados e configuráveis: traduzir **⌃T** (era ⌥⌘T), corrigir **⌃G**. Decisão consciente: consomem os bindings readline ⌃T/⌃G (transpose/abort) globalmente — raríssimo em uso real e re-configurável no recorder. Itens de menu com hints |
 | Fluxo da correção | **Configurável nos Settings**: "Mostrar popup" (default) vs "Substituir direto". Erros no modo direto sempre abrem o popup |
 | Refinamento | Campo de feedback no popup (ambas as ações) → regenera usando histórico de chat (system + texto + resposta anterior + feedback). Vive só na sessão do popup; nada é armazenado ou enviado |
 | Menu | Ambos os itens com hint de atalho (preenche a coluna reservada que hoje fica vazia) |
@@ -93,9 +93,9 @@ user("Feedback: \(feedback). Produce an improved version. Reply with ONLY the ne
 
 ### 4.3 Hotkey e menu
 
-- `KeyboardShortcuts.Name.fixGrammar`, default ⌥⌘G, registrado no
+- `KeyboardShortcuts.Name.fixGrammar`, default ⌃G, registrado no
   `HotkeyController` ao lado do translate.
-- Menu: "Translate selection ⌥⌘T" e "Fix grammar ⌥⌘G" (hints estáticos dos
+- Menu: "Translate selection ⌃T" e "Fix grammar ⌃G" (hints estáticos dos
   defaults; se o usuário re-gravar o atalho, o hint do menu é cosmético —
   aceito para v1).
 
@@ -126,7 +126,7 @@ Nova seção **Correction**: recorder do atalho + picker do fluxo
 - FakeTranslator ecoa feedback quando refinement presente.
 - SettingsStore: default `correctionReplacesDirectly == false`, persistência.
 - Manual: correção em PT e EN; refinamento muda a saída; modo direto substitui
-  sem popup; erro no modo direto abre popup; ⌥⌘G configurável.
+  sem popup; erro no modo direto abre popup; ⌃G configurável.
 
 ## 7. Fora de escopo (pós-v1.0.0)
 
