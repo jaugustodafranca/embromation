@@ -90,10 +90,14 @@ struct PopupView: View {
 
     private var footer: some View {
         HStack(spacing: 8) {
-            Button(L10n.t("popup.copy")) { model.onCopy?() }
-                .disabled(!hasFinishedTranslation)
-            Button(L10n.t("popup.replace")) { model.onReplace?() }
-                .disabled(!hasFinishedTranslation)
+            Button { model.onCopy?() } label: {
+                Text(L10n.t("popup.copy")) + Text(" ⌘C").font(.caption2).foregroundStyle(.secondary)
+            }
+            .disabled(!hasFinishedTranslation)
+            Button { model.onReplace?() } label: {
+                Text(L10n.t("popup.replace")) + Text(" ⌘⏎").font(.caption2).foregroundStyle(.secondary)
+            }
+            .disabled(!hasFinishedTranslation)
             Picker("", selection: Binding(
                 get: { model.target },
                 set: { model.onRetarget?($0) }
