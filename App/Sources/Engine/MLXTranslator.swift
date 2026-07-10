@@ -57,11 +57,14 @@ actor MLXTranslator: StreamingTranslator {
             var chat: [Chat.Message] = [.system(system), .user(request.text)]
             if let refinement = request.refinement {
                 chat.append(.assistant(refinement.previousOutput))
-                chat.append(.user("Feedback: \(refinement.feedback). Produce an improved version. Reply with ONLY the new text, in the same language as before."))
+                chat.append(.user("The previous version was not good enough. Feedback: \(refinement.feedback). Rewrite it applying the feedback. Reply with ONLY the new text, in the same language as before."))
             }
             let input = try await context.processor.prepare(
                 input: UserInput(chat: chat, additionalContext: ["enable_thinking": false]))
-            let parameters = GenerateParameters(maxTokens: 2048, temperature: 0.3)
+            // Refinements need a higher temperature: with the previous output
+            // in the chat, low temperature anchors the model into repeating it.
+            let temperature: Float = request.refinement == nil ? 0.3 : 0.7
+            let parameters = GenerateParameters(maxTokens: 2048, temperature: temperature)
             let stream = try MLXLMCommon.generate(input: input, parameters: parameters, context: context)
             var filter = ThinkBlockFilter()
             for await generation in stream {
