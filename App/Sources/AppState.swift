@@ -1,5 +1,6 @@
-import Foundation
+import AppKit
 import Combine
+import Foundation
 import TranslatorCore
 
 @MainActor
@@ -26,5 +27,12 @@ final class AppState: ObservableObject {
             onTranslate: { [weak self] in self?.coordinator.translateSelection() },
             onCorrect: { [weak self] in self?.coordinator.correctSelection() }
         )
+        // Settings persistence is debounced — write any pending edit on quit.
+        NotificationCenter.default.addObserver(
+            forName: NSApplication.willTerminateNotification,
+            object: nil, queue: .main
+        ) { [weak settings] _ in
+            MainActor.assumeIsolated { settings?.flush() }
+        }
     }
 }

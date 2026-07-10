@@ -65,3 +65,11 @@
 "settings.unload_after" = "Descarregar da RAM após %d min de inatividade";
 "settings.general" = "Geral";
 "settings.launch_at_login" = "Iniciar no login";
+"settings.tab_general" = "Geral";
+"settings.tab_translation" = "Tradução";
+"settings.tab_correction" = "Correção";
+"settings.tab_glossary" = "Glossário";
+"settings.tab_model" = "Modelo";
+"settings.tone_neutral" = "Neutro";
+"settings.tone_formal" = "Formal";
+"settings.tone_casual" = "Casual";
