@@ -17,14 +17,24 @@ jobs:
 
   app-build:
     name: App build (arm64, unsigned)
-    runs-on: macos-15
+    # macos-26 carries Xcode 26 (matching local dev); macos-15 tops out at
+    # Xcode 16, which can't build the pinned mlx-swift-lm toolchain line.
+    runs-on: macos-26
     timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
       - name: Install XcodeGen
         run: brew install xcodegen
       - name: Download Metal toolchain
-        run: xcodebuild -downloadComponent MetalToolchain
+        # Xcode 26 ships the Metal compiler as a separate component; older
+        # Xcodes bundle it and don't have the flag at all.
+        run: |
+          xcodebuild -version
+          if xcodebuild -help 2>/dev/null | grep -q downloadComponent; then
+            xcodebuild -downloadComponent MetalToolchain
+          else
+            echo "Metal toolchain bundled with this Xcode — skipping"
+          fi
       - name: Generate project
         run: xcodegen generate
       - name: Build
