@@ -19,6 +19,8 @@ final class AppState: ObservableObject {
 
     private var hotkey: HotkeyController?
 
+    var needsOnboarding: Bool { !settings.data.didOnboard }
+
     func start() {
         guard hotkey == nil else { return } // idempotent: scenePhase fires repeatedly
         hotkey = HotkeyController { [weak self] in

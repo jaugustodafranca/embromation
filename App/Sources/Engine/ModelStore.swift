@@ -73,7 +73,13 @@ final class ModelStore: ObservableObject {
                 configuration: ModelConfiguration(id: selectedSpec.id)
             ) { progress in
                 Task { @MainActor in
-                    self.state = .downloading(progress.fractionCompleted)
+                    // Monotonic guard: progress callbacks hop to the main actor via an
+                    // unordered `Task`, so a late `.downloading` update can land after
+                    // `state = .ready` below and leave the UI stuck showing a download
+                    // (see task-10-report.md review finding, applied in task-13).
+                    if self.state != .ready {
+                        self.state = .downloading(progress.fractionCompleted)
+                    }
                 }
             }
             state = .ready
