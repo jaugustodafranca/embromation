@@ -1,0 +1,31 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  core-tests:
+    name: TranslatorCore tests
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run tests
+        run: swift test --package-path TranslatorCore
+
+  app-build:
+    name: App build (arm64, unsigned)
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install XcodeGen
+        run: brew install xcodegen
+      - name: Download Metal toolchain
+        run: xcodebuild -downloadComponent MetalToolchain
+      - name: Generate project
+        run: xcodegen generate
+      - name: Build
+        run: |
+          xcodebuild -project Embromation.xcodeproj -scheme Embromation \
+            -configuration Release -skipMacroValidation CODE_SIGNING_ALLOWED=NO build
