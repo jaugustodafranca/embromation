@@ -22,8 +22,9 @@ final class AppState: ObservableObject {
 
     func start() {
         guard hotkey == nil else { return } // idempotent: scenePhase fires repeatedly
-        hotkey = HotkeyController { [weak self] in
-            self?.coordinator.translateSelection()
-        }
+        hotkey = HotkeyController(
+            onTranslate: { [weak self] in self?.coordinator.translateSelection() },
+            onCorrect: { [weak self] in self?.coordinator.correctSelection() }
+        )
     }
 }

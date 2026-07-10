@@ -1,5 +1,6 @@
 /* Menu bar */
 "menu.translate" = "Translate selection";
+"menu.fix_grammar" = "Fix grammar";
 "menu.settings" = "Settings…";
 "menu.quit" = "Quit Embromation";
 

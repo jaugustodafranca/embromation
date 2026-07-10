@@ -16,10 +16,12 @@ final class PopupModel: ObservableObject {
     @Published var text = ""
     @Published var sourceCode = ""
     @Published var target: Language = .portuguese
+    @Published var isCorrection = false
 
     // Wired by the coordinator:
     var onRetarget: ((Language) -> Void)?
     var onCopy: (() -> Void)?
     var onReplace: (() -> Void)?
     var onRetry: (() -> Void)?
+    var onRefine: ((String) -> Void)?
 }
