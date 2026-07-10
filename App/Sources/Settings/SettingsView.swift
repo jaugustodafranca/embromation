@@ -11,27 +11,27 @@ struct SettingsView: View {
 
     var body: some View {
         Form {
-            Section("Languages") {
-                Picker("Primary", selection: $settings.data.pair.primary) {
+            Section(L10n.t("settings.languages")) {
+                Picker(L10n.t("settings.primary"), selection: $settings.data.pair.primary) {
                     ForEach(Language.all, id: \.code) { Text($0.englishName).tag($0) }
                 }
-                Picker("Secondary", selection: $settings.data.pair.secondary) {
+                Picker(L10n.t("settings.secondary"), selection: $settings.data.pair.secondary) {
                     ForEach(Language.all, id: \.code) { Text($0.englishName).tag($0) }
                 }
-                Text("The detected language is translated to the other side of the pair.")
+                Text(L10n.t("settings.language_hint"))
                     .font(.caption).foregroundStyle(.secondary)
             }
 
-            Section("Translation") {
-                Picker("Tone", selection: $settings.data.tone) {
+            Section(L10n.t("settings.translation")) {
+                Picker(L10n.t("settings.tone"), selection: $settings.data.tone) {
                     ForEach(Tone.allCases, id: \.self) { Text($0.rawValue.capitalized).tag($0) }
                 }
                 .pickerStyle(.segmented)
-                TextField("Extra instructions", text: $settings.data.customInstructions, axis: .vertical)
+                TextField(L10n.t("settings.extra_instructions"), text: $settings.data.customInstructions, axis: .vertical)
                     .lineLimit(2...4)
             }
 
-            Section("Never translate these terms") {
+            Section(L10n.t("settings.glossary")) {
                 ForEach(settings.data.glossary, id: \.self) { term in
                     HStack {
                         Text(term).font(.body.monospaced())
@@ -43,19 +43,19 @@ struct SettingsView: View {
                     }
                 }
                 HStack {
-                    TextField("Add term", text: $newTerm)
+                    TextField(L10n.t("settings.add_term"), text: $newTerm)
                         .onSubmit(addTerm)
-                    Button("Add", action: addTerm)
+                    Button(L10n.t("settings.add"), action: addTerm)
                         .disabled(newTerm.trimmingCharacters(in: .whitespaces).isEmpty)
                 }
             }
 
-            Section("Shortcut") {
-                KeyboardShortcuts.Recorder("Translate selection", name: .translateSelection)
+            Section(L10n.t("settings.shortcut")) {
+                KeyboardShortcuts.Recorder(L10n.t("menu.translate"), name: .translateSelection)
             }
 
-            Section("Model") {
-                Picker("Model", selection: $settings.data.selectedModelID) {
+            Section(L10n.t("settings.model")) {
+                Picker(L10n.t("settings.model"), selection: $settings.data.selectedModelID) {
                     ForEach(ModelCatalog.all) { spec in
                         Text("\(spec.displayName) — \(spec.approxSizeGB, specifier: "%.1f") GB")
                             .tag(spec.id)
@@ -65,23 +65,23 @@ struct SettingsView: View {
 
                 switch modelStore.state {
                 case .ready:
-                    Label("Downloaded", systemImage: "checkmark.circle.fill")
+                    Label(L10n.t("settings.downloaded"), systemImage: "checkmark.circle.fill")
                         .foregroundStyle(.green)
                 case .downloading(let fraction):
-                    ProgressView(value: fraction) { Text("Downloading…") }
+                    ProgressView(value: fraction) { Text(L10n.t("settings.downloading")) }
                 case .missing, .unknown:
-                    Button("Download model") { Task { await modelStore.download() } }
+                    Button(L10n.t("settings.download")) { Task { await modelStore.download() } }
                 }
                 if let message = modelStore.lastErrorMessage {
                     Text(message).font(.caption).foregroundStyle(.red)
                 }
 
-                Stepper("Unload from RAM after \(settings.data.unloadAfterMinutes) min idle",
+                Stepper(String(format: L10n.t("settings.unload_after"), settings.data.unloadAfterMinutes),
                         value: $settings.data.unloadAfterMinutes, in: 1...60)
             }
 
-            Section("General") {
-                Toggle("Launch at login", isOn: launchAtLogin)
+            Section(L10n.t("settings.general")) {
+                Toggle(L10n.t("settings.launch_at_login"), isOn: launchAtLogin)
             }
         }
         .formStyle(.grouped)

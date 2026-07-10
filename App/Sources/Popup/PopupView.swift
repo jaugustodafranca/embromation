@@ -27,7 +27,7 @@ struct PopupView: View {
                 .padding(.horizontal, 8).padding(.vertical, 3)
                 .background(Capsule().fill(.tint.opacity(0.15)))
             Spacer()
-            Text("local model")
+            Text(L10n.t("popup.local_model"))
                 .font(.caption2)
                 .foregroundStyle(.secondary)
         }
@@ -40,15 +40,15 @@ struct PopupView: View {
         case .working:
             HStack(spacing: 8) {
                 ProgressView().controlSize(.small)
-                Text("Translating…").foregroundStyle(.secondary)
+                Text(L10n.t("popup.working")).foregroundStyle(.secondary)
             }
         case .noSelection:
-            Text("No text selected — select something and press the shortcut again. Tip: if the app blocks capture, copy the text (⌘C) and retry.")
+            Text(L10n.t("popup.no_selection"))
                 .foregroundStyle(.secondary)
         case .permissionNeeded:
             VStack(alignment: .leading, spacing: 8) {
-                Text("Accessibility permission is required to capture selected text.")
-                Button("Open System Settings…") {
+                Text(L10n.t("popup.permission"))
+                Button(L10n.t("popup.open_settings")) {
                     NSWorkspace.shared.open(URL(string:
                         "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")!)
                 }
@@ -62,8 +62,8 @@ struct PopupView: View {
         case .failed(let message):
             VStack(alignment: .leading, spacing: 8) {
                 Text(message).foregroundStyle(.red)
-                Button("Try again") { model.onRetry?() }
-                Text("If this keeps happening, try the lighter model in Settings.")
+                Button(L10n.t("popup.retry")) { model.onRetry?() }
+                Text(L10n.t("popup.failed_hint"))
                     .font(.caption).foregroundStyle(.secondary)
             }
         }
@@ -71,9 +71,9 @@ struct PopupView: View {
 
     private var footer: some View {
         HStack(spacing: 8) {
-            Button("Copy") { model.onCopy?() }
+            Button(L10n.t("popup.copy")) { model.onCopy?() }
                 .disabled(model.phase != .done)
-            Button("Replace") { model.onReplace?() }
+            Button(L10n.t("popup.replace")) { model.onReplace?() }
                 .disabled(model.phase != .done)
             Picker("", selection: Binding(
                 get: { model.target },
@@ -87,7 +87,7 @@ struct PopupView: View {
             .frame(width: 150)
             .disabled(!(model.phase == .streaming || model.phase == .done))
             Spacer()
-            Text("esc closes").font(.caption2).foregroundStyle(.tertiary)
+            Text(L10n.t("popup.esc")).font(.caption2).foregroundStyle(.tertiary)
         }
         .padding(.horizontal, 12).padding(.vertical, 8)
     }

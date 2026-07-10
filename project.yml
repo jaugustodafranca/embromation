@@ -27,6 +27,7 @@ targets:
     platform: macOS
     sources:
       - App/Sources
+      - App/Resources
     settings:
       base:
         ARCHS: arm64
