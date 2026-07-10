@@ -54,6 +54,10 @@ final class ModelStore: ObservableObject {
     /// Downloads (and warms) the selected model. Progress is published for the UI.
     func download() {
         guard case .downloading = state else {
+            // A model switch can knock `state` out of .downloading while an
+            // old download still runs — cancel it before starting a new one,
+            // or it becomes an orphan with no UI path to stop it.
+            downloadTask?.cancel()
             state = .downloading(0)
             lastErrorMessage = nil
             downloadTask = Task { await performDownload() }
@@ -85,7 +89,8 @@ final class ModelStore: ObservableObject {
             // Re-derive from disk: the user may have switched models mid-download.
             refresh()
         } catch is CancellationError {
-            refresh()
+            // No state changes here: cancelDownload() already refreshed, and a
+            // download superseded by a newer one must not clobber its state.
         } catch {
             lastErrorMessage = error.localizedDescription
             state = .missing
