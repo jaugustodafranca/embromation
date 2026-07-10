@@ -1,4 +1,3 @@
-// App/Sources/AppState.swift
 import Foundation
 import Combine
 import TranslatorCore

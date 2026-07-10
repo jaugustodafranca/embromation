@@ -1,4 +1,3 @@
-// App/Sources/Onboarding/OnboardingView.swift
 import SwiftUI
 import ApplicationServices
 import TranslatorCore
@@ -60,17 +59,23 @@ struct OnboardingView: View {
             return
         }
         step += 1
-        if step == 1 {
-            // Triggers the system prompt that lists the app in Accessibility settings.
-            let options = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true] as CFDictionary
-            AXIsProcessTrustedWithOptions(options)
+        switch step {
+        case 1: promptForAccessibility()
+        case 2: startDownloadIfNeeded()
+        case 3: runDemo()
+        default: break
         }
-        if step == 2, modelStore.state != .ready {
-            Task { await modelStore.download() }
-        }
-        if step == 3 {
-            runDemo()
-        }
+    }
+
+    /// Triggers the system prompt that lists the app in Accessibility settings.
+    private func promptForAccessibility() {
+        let options = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true] as CFDictionary
+        AXIsProcessTrustedWithOptions(options)
+    }
+
+    private func startDownloadIfNeeded() {
+        guard modelStore.state != .ready else { return }
+        Task { await modelStore.download() }
     }
 
     private func runDemo() {

@@ -1,4 +1,3 @@
-// App/Sources/Popup/PopupModel.swift
 import Foundation
 import TranslatorCore
 
@@ -18,9 +17,9 @@ final class PopupModel: ObservableObject {
     @Published var sourceCode = ""
     @Published var target: Language = .portuguese
 
-    // Wired by the coordinator / controller:
+    // Wired by the coordinator:
     var onRetarget: ((Language) -> Void)?
-    var onCopy: (() -> Void)?      // implemented in Task 11
-    var onReplace: (() -> Void)?   // implemented in Task 11
+    var onCopy: (() -> Void)?
+    var onReplace: (() -> Void)?
     var onRetry: (() -> Void)?
 }

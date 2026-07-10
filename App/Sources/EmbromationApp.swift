@@ -1,4 +1,3 @@
-// App/Sources/EmbromationApp.swift
 import SwiftUI
 import TranslatorCore
 

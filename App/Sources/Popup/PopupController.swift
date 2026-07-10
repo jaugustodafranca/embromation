@@ -1,4 +1,3 @@
-// App/Sources/Popup/PopupController.swift
 import AppKit
 import SwiftUI
 
@@ -37,18 +36,20 @@ final class PopupController {
         panel.setFrameOrigin(origin)
     }
 
+    private static let escapeKeyCode: UInt16 = 53
+
     /// Esc anywhere or a click outside the panel dismisses it.
     /// Global monitors require the Accessibility permission we already hold.
     private func installMonitors() {
         removeMonitors()
-        if let m = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] _ in
+        let clickMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] _ in
             Task { @MainActor in self?.dismiss() }
-        } { monitors.append(m) }
-        if let m = NSEvent.addGlobalMonitorForEvents(matching: .keyDown) { [weak self] event in
-            if event.keyCode == 53 { // esc
-                Task { @MainActor in self?.dismiss() }
-            }
-        } { monitors.append(m) }
+        }
+        let escapeMonitor = NSEvent.addGlobalMonitorForEvents(matching: .keyDown) { [weak self] event in
+            guard event.keyCode == Self.escapeKeyCode else { return }
+            Task { @MainActor in self?.dismiss() }
+        }
+        monitors = [clickMonitor, escapeMonitor].compactMap { $0 }
     }
 
     private func removeMonitors() {

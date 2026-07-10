@@ -1,4 +1,3 @@
-// App/Sources/Settings/SettingsView.swift
 import SwiftUI
 import KeyboardShortcuts
 import ServiceManagement

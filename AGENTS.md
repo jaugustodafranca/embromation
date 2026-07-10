@@ -13,7 +13,7 @@ verification checklist pending — see
 `docs/superpowers/plans/2026-07-09-embromation-mvp.md` "Verification
 checklist".
 
-## Structure (planned)
+## Structure
 
 - `App/` — SwiftUI target: `MenuBar/`, `Popup/` (non-activating NSPanel), `Settings/`, `Onboarding/`
 - `TranslatorCore/` — Swift Package with **no UI dependencies**: `InferenceEngine`, `ModelManager`, `PromptBuilder`, `LanguageDetector`, `SelectionCapture`
