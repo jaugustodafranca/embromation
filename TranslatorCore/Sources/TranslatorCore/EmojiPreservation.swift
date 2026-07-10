@@ -18,4 +18,42 @@ public enum EmojiPreservation {
                 || (scalar.properties.isEmoji && scalar.value > 0x238C)
         }
     }
+
+    /// A single regional indicator is always a broken half-flag (🇧 instead
+    /// of 🇧🇷) and renders as a boxed letter.
+    private static func isLoneRegionalIndicator(_ character: Character) -> Bool {
+        character.unicodeScalars.count == 1
+            && (0x1F1E6...0x1F1FF).contains(character.unicodeScalars.first!.value)
+    }
+
+    /// Deterministic cleanup for the two failure shapes small models produce:
+    /// half-flags anywhere, and dropped emoji at the end of the text. Middle
+    /// emoji can't be repositioned safely, so they are left to the caller's
+    /// missing-emoji check.
+    public static func repair(input: String, output: String) -> String {
+        var repaired = String(output.filter { !isLoneRegionalIndicator($0) })
+
+        let trailingRun = trailingEmojiRun(of: input)
+        guard !trailingRun.isEmpty else { return repaired }
+        let produced = Set(repaired.filter(isEmojiCluster))
+        let missing = trailingRun.filter { !produced.contains($0) }
+        guard !missing.isEmpty else { return repaired }
+
+        while let last = repaired.last, last.isWhitespace {
+            repaired.removeLast()
+        }
+        return repaired + " " + String(missing)
+    }
+
+    /// The run of emoji clusters at the end of the text, ignoring whitespace
+    /// between them (e.g. "obrigado! 🎉 🇧🇷" yields [🎉, 🇧🇷]).
+    private static func trailingEmojiRun(of text: String) -> [Character] {
+        var run: [Character] = []
+        for character in text.reversed() {
+            if character.isWhitespace { continue }
+            guard isEmojiCluster(character) else { break }
+            run.insert(character, at: 0)
+        }
+        return run
+    }
 }

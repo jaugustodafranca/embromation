@@ -69,10 +69,14 @@ final class PopupController {
     private func resizeToFit() {
         guard let panel, let content = panel.contentView else { return }
         let fitting = content.fittingSize
-        let height = min(max(fitting.height, 96), 480)
+        let height = min(max(fitting.height, 96), Self.maxPanelHeight)
         guard abs(panel.frame.height - height) > 0.5 else { return }
         var frame = panel.frame
-        frame.origin.y += frame.size.height - height
+        if anchor == .top {
+            // Keep the top edge fixed: grow downward from the cursor.
+            frame.origin.y += frame.size.height - height
+        }
+        // anchor == .bottom keeps origin.y (the bottom edge): grows upward.
         frame.size.height = height
         frame.origin = clampedToScreen(frame.origin, size: frame.size)
         panel.setFrame(frame, display: true)
@@ -104,6 +108,13 @@ final class PopupController {
 
     private var targetScreen: NSScreen?
 
+    /// Which edge of the panel stays fixed while the content grows.
+    private enum GrowthAnchor { case top, bottom }
+    private var anchor: GrowthAnchor = .top
+
+    /// The panel can grow up to this tall; used to pick the anchor up front.
+    private static let maxPanelHeight: CGFloat = 480
+
     private func position() {
         guard let panel else { return }
         let mouse = NSEvent.mouseLocation
@@ -112,7 +123,19 @@ final class PopupController {
         // can point at the wrong screen entirely.
         targetScreen = NSScreen.screens.first(where: { NSMouseInRect(mouse, $0.frame, false) })
             ?? NSScreen.main
-        let origin = NSPoint(x: mouse.x - 40, y: mouse.y - panel.frame.height - 16)
+        let visible = targetScreen?.visibleFrame ?? .zero
+        // Selecting text near the bottom of the screen (a chat input, say)
+        // leaves no room for the popup to grow downward. Open it above the
+        // cursor instead and let it grow upward.
+        let spaceBelow = mouse.y - visible.minY
+        let origin: NSPoint
+        if spaceBelow < Self.maxPanelHeight + 24 && mouse.y < visible.midY {
+            anchor = .bottom
+            origin = NSPoint(x: mouse.x - 40, y: mouse.y + 16)
+        } else {
+            anchor = .top
+            origin = NSPoint(x: mouse.x - 40, y: mouse.y - panel.frame.height - 16)
+        }
         panel.setFrameOrigin(clampedToScreen(origin, size: panel.frame.size))
     }
 
