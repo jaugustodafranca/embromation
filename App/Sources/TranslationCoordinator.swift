@@ -87,7 +87,10 @@ final class TranslationCoordinator {
         popup.model.sourceCode = source.code
         popup.model.target = target
         popup.model.text = ""
-        popup.model.phase = .streaming
+        // Stay in .working (spinner) until the first chunk arrives — model
+        // load and prompt processing take seconds on a cold start, and a
+        // blank streaming body reads as frozen.
+        popup.model.phase = .working
 
         let request = TranslationRequest(text: text, source: source, target: target,
                                          tone: settings.data.tone,
@@ -96,6 +99,9 @@ final class TranslationCoordinator {
         do {
             for try await chunk in translator.translate(request) {
                 try Task.checkCancellation()
+                if popup.model.phase != .streaming {
+                    popup.model.phase = .streaming
+                }
                 popup.model.text += chunk
             }
             guard !Task.isCancelled else { return }

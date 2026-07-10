@@ -26,8 +26,12 @@ struct SettingsView: View {
                     ForEach(Tone.allCases, id: \.self) { Text($0.rawValue.capitalized).tag($0) }
                 }
                 .pickerStyle(.segmented)
-                TextField(L10n.t("settings.extra_instructions"), text: $settings.data.customInstructions, axis: .vertical)
-                    .lineLimit(2...4)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(L10n.t("settings.extra_instructions"))
+                    TextField(L10n.t("settings.extra_instructions_placeholder"),
+                              text: $settings.data.customInstructions, axis: .vertical)
+                        .lineLimit(3...6)
+                }
             }
 
             Section(L10n.t("settings.glossary")) {
