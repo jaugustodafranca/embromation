@@ -16,6 +16,8 @@
 "popup.esc" = "esc closes";
 "popup.local_model" = "local model";
 "popup.failed_hint" = "If this keeps happening, try the lighter model in Settings.";
+"popup.feedback_placeholder" = "Tell the model what to improve…";
+"popup.refine" = "Regenerate";
 
 /* Onboarding */
 "onboarding.window_title" = "Welcome to Embromation";
