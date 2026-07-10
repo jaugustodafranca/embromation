@@ -1,0 +1,33 @@
+name: 💡 Improvement
+description: An idea to make Embromation better
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What's the problem or opportunity?
+      description: What annoys you today, or what could be better? Real usage stories help a lot.
+      placeholder: "Every time I translate a long text, I have to…"
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What would you like to happen?
+      description: Describe the behavior you'd expect. Screenshots and sketches welcome.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives you considered
+      description: Other ways to solve it, workarounds you use today, apps that do this well.
+    validations:
+      required: false
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Privacy check
+      options:
+        - label: This idea does not require sending user data anywhere (the app's only network call is the model download — that's non-negotiable).
+          required: true
