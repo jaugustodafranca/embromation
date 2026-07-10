@@ -14,10 +14,20 @@ no account.
 - 🎚️ Tone control (neutral / formal / casual) plus free-form instructions
 - 🛡️ Glossary of protected terms — "deploy", "commit" and "pipeline" stay put
 - 🌐 Auto-detected language pair: one hotkey translates both directions
-- ⌨️ Keyboard end to end: ⌥⌘T translates, ⌘C copies, ⌘⏎ replaces in place
+- ⌨️ Keyboard end to end: ⌃T translates, ⌘C copies, ⌘⏎ replaces in place
 
-**Status:** 🚧 translation is done and merged; the grammar-correction and
-feedback-refine features are in progress — v1.0.0 launches with everything.
+## Install
+
+1. Download the latest `Embromation-x.y.z.dmg` from
+   [Releases](https://github.com/jaugustodafranca/embromation/releases).
+2. Drag **Embromation** to Applications and launch it.
+3. Follow the 3-step welcome guide (Accessibility permission + one-time
+   ~2.3 GB model download).
+
+The app is signed and notarized. It lives in your menu bar — select text
+anywhere and press **⌃T** to translate or **⌃G** to fix grammar.
+
+**Status:** ✅ v1.0.0 — see [CHANGELOG.md](CHANGELOG.md).
 
 Requires macOS 14+ on Apple Silicon.
 
