@@ -10,6 +10,9 @@ struct EmbromationApp: App {
     var body: some Scene {
         MenuBarExtra("Embromation", systemImage: "character.bubble") {
             Button(L10n.t("menu.translate")) { state.coordinator.translateSelection() }
+                .keyboardShortcut("t", modifiers: [.control])
+            Button(L10n.t("menu.fix_grammar")) { state.coordinator.correctSelection() }
+                .keyboardShortcut("g", modifiers: [.control])
             Divider()
             SettingsLink { Text(L10n.t("menu.settings")) }
                 .keyboardShortcut(",")
