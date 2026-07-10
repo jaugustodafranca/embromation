@@ -1,4 +1,5 @@
 import AppKit
+import Combine
 import SwiftUI
 
 @MainActor
@@ -6,16 +7,41 @@ final class PopupController {
     let model = PopupModel()
     private var panel: PopupPanel?
     private var monitors: [Any] = []
+    private var resizeSubscription: AnyCancellable?
     var onDismiss: (() -> Void)?
 
     func show() {
         if panel == nil {
             let hosting = NSHostingView(rootView: PopupView(model: model))
             panel = PopupPanel(contentView: hosting)
+            // Grow the panel as the translation streams in (throttled so the
+            // window doesn't jitter on every token).
+            resizeSubscription = model.objectWillChange
+                .throttle(for: .milliseconds(80), scheduler: RunLoop.main, latest: true)
+                .sink { [weak self] _ in
+                    DispatchQueue.main.async { self?.resizeToFit() }
+                }
         }
         position()
+        resizeToFit()
         panel?.orderFrontRegardless()
         installMonitors()
+    }
+
+    /// Resizes the panel to the SwiftUI content's ideal height, keeping the
+    /// top edge anchored so the popup grows downward from the cursor.
+    private func resizeToFit() {
+        guard let panel, let content = panel.contentView else { return }
+        let fitting = content.fittingSize
+        let height = min(max(fitting.height, 96), 480)
+        guard abs(panel.frame.height - height) > 0.5 else { return }
+        var frame = panel.frame
+        frame.origin.y += frame.size.height - height
+        frame.size.height = height
+        if let screen = panel.screen ?? NSScreen.main {
+            frame.origin.y = max(frame.origin.y, screen.visibleFrame.minY + 8)
+        }
+        panel.setFrame(frame, display: true)
     }
 
     func dismiss() {
