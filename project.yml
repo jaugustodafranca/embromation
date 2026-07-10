@@ -1,0 +1,32 @@
+# project.yml
+name: Embromation
+options:
+  bundleIdPrefix: app.embromation
+  deploymentTarget:
+    macOS: "14.0"
+packages:
+  TranslatorCore:
+    path: TranslatorCore
+  KeyboardShortcuts:
+    url: https://github.com/sindresorhus/KeyboardShortcuts
+    from: 2.0.0
+targets:
+  Embromation:
+    type: application
+    platform: macOS
+    sources:
+      - App/Sources
+    settings:
+      base:
+        ARCHS: arm64
+        PRODUCT_BUNDLE_IDENTIFIER: app.embromation.Embromation
+        INFOPLIST_FILE: App/Info.plist
+        CODE_SIGN_ENTITLEMENTS: App/Embromation.entitlements
+        CODE_SIGN_STYLE: Automatic
+        ENABLE_HARDENED_RUNTIME: YES
+        SWIFT_VERSION: 5.10
+        MARKETING_VERSION: 0.1.0
+        CURRENT_PROJECT_VERSION: 1
+    dependencies:
+      - package: TranslatorCore
+      - package: KeyboardShortcuts
