@@ -6,7 +6,7 @@ struct SelectionReplacer {
     /// then restores the previous clipboard content.
     func replaceSelection(with text: String) async {
         let pasteboard = NSPasteboard.general
-        let saved = pasteboard.string(forType: .string)
+        let snapshot = snapshotPasteboardItems(pasteboard)
 
         pasteboard.clearContents()
         pasteboard.setString(text, forType: .string)
@@ -15,8 +15,20 @@ struct SelectionReplacer {
         try? await Task.sleep(for: .milliseconds(250))  // let the app consume the paste
 
         pasteboard.clearContents()
-        if let saved {
-            pasteboard.setString(saved, forType: .string)
+        if !snapshot.isEmpty {
+            pasteboard.writeObjects(snapshot)
+        }
+    }
+
+    private func snapshotPasteboardItems(_ pasteboard: NSPasteboard) -> [NSPasteboardItem] {
+        (pasteboard.pasteboardItems ?? []).map { item in
+            let copy = NSPasteboardItem()
+            for type in item.types {
+                if let data = item.data(forType: type) {
+                    copy.setData(data, forType: type)
+                }
+            }
+            return copy
         }
     }
 
