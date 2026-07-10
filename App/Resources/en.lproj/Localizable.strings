@@ -40,6 +40,7 @@
 "settings.translation" = "Translation";
 "settings.tone" = "Tone";
 "settings.extra_instructions" = "Extra instructions";
+"settings.extra_instructions_placeholder" = "e.g. I work in tech — keep programming terms in English.";
 "settings.glossary" = "Never translate these terms";
 "settings.add_term" = "Add term";
 "settings.add" = "Add";
