@@ -74,10 +74,19 @@ final class PopupController {
         var frame = panel.frame
         frame.origin.y += frame.size.height - height
         frame.size.height = height
-        if let screen = panel.screen ?? NSScreen.main {
-            frame.origin.y = max(frame.origin.y, screen.visibleFrame.minY + 8)
-        }
+        frame.origin = clampedToScreen(frame.origin, size: frame.size)
         panel.setFrame(frame, display: true)
+    }
+
+    /// Keeps the panel fully inside the visible frame of the screen where the
+    /// popup was summoned. Clamping both axes on every resize matters near
+    /// screen edges, where the growing panel would otherwise slide off-screen.
+    private func clampedToScreen(_ origin: NSPoint, size: NSSize) -> NSPoint {
+        guard let visible = targetScreen?.visibleFrame else { return origin }
+        var clamped = origin
+        clamped.x = min(max(clamped.x, visible.minX + 8), visible.maxX - size.width - 8)
+        clamped.y = min(max(clamped.y, visible.minY + 8), visible.maxY - size.height - 8)
+        return clamped
     }
 
     /// Hides the panel without firing onDismiss — used when a new run
@@ -93,16 +102,18 @@ final class PopupController {
         onDismiss?()
     }
 
+    private var targetScreen: NSScreen?
+
     private func position() {
         guard let panel else { return }
         let mouse = NSEvent.mouseLocation
-        var origin = NSPoint(x: mouse.x - 40, y: mouse.y - panel.frame.height - 16)
-        if let screen = NSScreen.screens.first(where: { NSMouseInRect(mouse, $0.frame, false) }) {
-            let visible = screen.visibleFrame
-            origin.x = min(max(origin.x, visible.minX + 8), visible.maxX - panel.frame.width - 8)
-            origin.y = min(max(origin.y, visible.minY + 8), visible.maxY - panel.frame.height - 8)
-        }
-        panel.setFrameOrigin(origin)
+        // Resolve the screen from the mouse, not from the panel: before the
+        // first display panel.screen is nil, and on multi-monitor setups it
+        // can point at the wrong screen entirely.
+        targetScreen = NSScreen.screens.first(where: { NSMouseInRect(mouse, $0.frame, false) })
+            ?? NSScreen.main
+        let origin = NSPoint(x: mouse.x - 40, y: mouse.y - panel.frame.height - 16)
+        panel.setFrameOrigin(clampedToScreen(origin, size: panel.frame.size))
     }
 
     private static let escapeKeyCode: UInt16 = 53
