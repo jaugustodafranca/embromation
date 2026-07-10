@@ -30,7 +30,8 @@
 "onboarding.granted" = "Concedida";
 "onboarding.download_title" = "Baixando o modelo";
 "onboarding.download_body" = "%@ roda totalmente no seu Mac. Download único.";
-"onboarding.download_progress" = "%d%% de ~%.1f GB";
+"onboarding.downloading_size" = "Baixando ~%.1f GB — a barra é tímida, mas os bytes estão fluindo.";
+"onboarding.cancel_download" = "Cancelar download";
 "onboarding.model_ready" = "Pronto";
 "onboarding.ready" = "Tudo pronto";
 "onboarding.hint" = "Selecione qualquer texto e aperte ⌃T para traduzir — ou ⌃G para corrigir.";

@@ -80,10 +80,15 @@ struct SettingsView: View {
                 case .ready:
                     Label(L10n.t("settings.downloaded"), systemImage: "checkmark.circle.fill")
                         .foregroundStyle(.green)
-                case .downloading(let fraction):
-                    ProgressView(value: fraction) { Text(L10n.t("settings.downloading")) }
+                case .downloading:
+                    HStack {
+                        ProgressView().controlSize(.small)
+                        Text(L10n.t("settings.downloading"))
+                        Spacer()
+                        Button(L10n.t("onboarding.cancel_download")) { modelStore.cancelDownload() }
+                    }
                 case .missing, .unknown:
-                    Button(L10n.t("settings.download")) { Task { await modelStore.download() } }
+                    Button(L10n.t("settings.download")) { modelStore.download() }
                 }
                 if let message = modelStore.lastErrorMessage {
                     Text(message).font(.caption).foregroundStyle(.red)
