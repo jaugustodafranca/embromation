@@ -1,0 +1,51 @@
+name: 🐛 Bug report
+description: Something isn't working
+labels: [bug]
+body:
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you do, what did you expect, what happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Select text in …
+        2. Press ⌥⌘T
+        3. …
+    validations:
+      required: true
+  - type: input
+    id: macos
+    attributes:
+      label: macOS version
+      placeholder: "e.g. macOS 26.1"
+    validations:
+      required: true
+  - type: input
+    id: chip
+    attributes:
+      label: Mac chip
+      placeholder: "e.g. M4 Pro"
+    validations:
+      required: true
+  - type: input
+    id: model
+    attributes:
+      label: Translation model
+      description: Settings → Model
+      placeholder: "e.g. Qwen 3 4B"
+    validations:
+      required: false
+  - type: input
+    id: source-app
+    attributes:
+      label: App you were translating from
+      description: Capture behaves differently per app (native vs Electron vs terminal).
+      placeholder: "e.g. Safari, VS Code, Slack"
+    validations:
+      required: false
