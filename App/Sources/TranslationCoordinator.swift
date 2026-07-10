@@ -81,8 +81,11 @@ final class TranslationCoordinator {
             popup.model.text = ""
             popup.show()
         } else {
-            // Direct mode shows the popup only on failure — clear stale
-            // presentation state so an error renders clean.
+            // Direct mode shows the popup only on failure — hide any stale
+            // panel and reset presentation state (phase change also disables
+            // the popup shortcuts).
+            popup.hide()
+            popup.model.phase = .working
             popup.model.sourceCode = ""
             popup.model.text = ""
         }
@@ -179,6 +182,7 @@ final class TranslationCoordinator {
             return
         } catch {
             popup.model.isCorrection = true
+            popup.model.sourceCode = request.source.code
             popup.model.phase = .failed(error.localizedDescription)
             popup.show()
             return
@@ -187,6 +191,7 @@ final class TranslationCoordinator {
         let corrected = result.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !corrected.isEmpty else {
             popup.model.isCorrection = true
+            popup.model.sourceCode = request.source.code
             popup.model.phase = .failed(L10n.t("popup.empty_response"))
             popup.show()
             return
