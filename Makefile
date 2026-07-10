@@ -11,11 +11,13 @@ test:
 	swift test --package-path TranslatorCore
 
 build: gen
-	# -skipMacroValidation: mlx-swift-lm's MLXHuggingFace target uses a Swift macro
-	# (#hubDownloader / #huggingFaceTokenizerLoader) that Xcode otherwise refuses to
-	# run without an interactive "Trust & Enable" prompt, which headless CI can't answer.
+	# -skipMacroValidation / -skipPackagePluginValidation: mlx-swift-lm ships a Swift
+	# macro (#hubDownloader / #huggingFaceTokenizerLoader) and mlx-swift a build plugin
+	# (CudaBuild) that Xcode otherwise refuses to run without an interactive
+	# "Trust & Enable" prompt, which headless builds can't answer.
 	xcodebuild -project Embromation.xcodeproj -scheme Embromation \
-		-configuration Debug -derivedDataPath $(DERIVED) -skipMacroValidation build
+		-configuration Debug -derivedDataPath $(DERIVED) \
+		-skipMacroValidation -skipPackagePluginValidation build
 
 run: build
 	open $(APP)

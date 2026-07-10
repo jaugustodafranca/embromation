@@ -5,6 +5,12 @@ on:
     branches: [main]
   pull_request:
 
+# A newer push supersedes any in-flight run for the same branch — don't pay
+# (macOS minutes bill at 10x on private repos) for builds nobody will read.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   core-tests:
     name: TranslatorCore tests
@@ -37,7 +43,21 @@ jobs:
           fi
       - name: Generate project
         run: xcodegen generate
+      - name: Cache compiled dependencies
+        # Almost all of the build time is the MLX C++/Metal stack, which only
+        # changes when the pins in project.yml change. Warm-cache builds only
+        # recompile the app sources.
+        uses: actions/cache@v4
+        with:
+          path: .build/DerivedData
+          key: derived-data-${{ runner.os }}-${{ hashFiles('project.yml') }}
+          restore-keys: derived-data-${{ runner.os }}-
       - name: Build
+        # -skipMacroValidation / -skipPackagePluginValidation: headless Xcode
+        # has no interactive "Trust & Enable" prompt for mlx-swift's macros
+        # and its CudaBuild plugin.
         run: |
           xcodebuild -project Embromation.xcodeproj -scheme Embromation \
-            -configuration Release -skipMacroValidation CODE_SIGNING_ALLOWED=NO build
+            -configuration Release -derivedDataPath .build/DerivedData \
+            -skipMacroValidation -skipPackagePluginValidation \
+            CODE_SIGNING_ALLOWED=NO build
