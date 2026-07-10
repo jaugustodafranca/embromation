@@ -187,6 +187,7 @@ final class TranslationCoordinator {
             return
         }
         lastRequest = request
+        popup.dismiss()
         await SelectionReplacer().replaceSelection(with: corrected)
     }
 }

@@ -11,6 +11,7 @@ private struct TranslationHeightKey: PreferenceKey {
 struct PopupView: View {
     @ObservedObject var model: PopupModel
     @State private var translationHeight: CGFloat = 0
+    @State private var feedbackText = ""
 
     /// The text area grows with the translation up to this height, then scrolls.
     private static let maxTranslationHeight: CGFloat = 300
@@ -22,6 +23,17 @@ struct PopupView: View {
             content
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(12)
+            if hasFinishedTranslation {
+                Divider()
+                HStack(spacing: 8) {
+                    TextField(L10n.t("popup.feedback_placeholder"), text: $feedbackText)
+                        .textFieldStyle(.roundedBorder)
+                        .onSubmit(submitFeedback)
+                    Button(L10n.t("popup.refine"), action: submitFeedback)
+                        .disabled(feedbackText.trimmingCharacters(in: .whitespaces).isEmpty)
+                }
+                .padding(.horizontal, 12).padding(.vertical, 8)
+            }
             Divider()
             footer
         }
@@ -29,12 +41,17 @@ struct PopupView: View {
         .fixedSize(horizontal: false, vertical: true)
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
         .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(.separator))
+        .onChange(of: model.phase) { _, phase in
+            if phase == .working { feedbackText = "" }
+        }
     }
 
     private var header: some View {
         HStack {
             if !model.sourceCode.isEmpty {
-                Text("\(model.sourceCode.uppercased()) → \(model.target.code.uppercased())")
+                Text(model.isCorrection
+                     ? model.sourceCode.uppercased()
+                     : "\(model.sourceCode.uppercased()) → \(model.target.code.uppercased())")
                     .font(.caption.bold())
                     .padding(.horizontal, 8).padding(.vertical, 3)
                     .background(Capsule().fill(.tint.opacity(0.15)))
@@ -100,20 +117,29 @@ struct PopupView: View {
                 Text(L10n.t("popup.replace")) + Text(" ⌘⏎").font(.caption2).foregroundStyle(.secondary)
             }
             .disabled(!hasFinishedTranslation)
-            Picker("", selection: Binding(
-                get: { model.target },
-                set: { model.onRetarget?($0) }
-            )) {
-                ForEach(Language.all, id: \.code) { lang in
-                    Text(lang.englishName).tag(lang)
+            if !model.isCorrection {
+                Picker("", selection: Binding(
+                    get: { model.target },
+                    set: { model.onRetarget?($0) }
+                )) {
+                    ForEach(Language.all, id: \.code) { lang in
+                        Text(lang.englishName).tag(lang)
+                    }
                 }
+                .labelsHidden()
+                .frame(width: 150)
+                .disabled(!hasTranslation)
             }
-            .labelsHidden()
-            .frame(width: 150)
-            .disabled(!hasTranslation)
             Spacer()
             Text(L10n.t("popup.esc")).font(.caption2).foregroundStyle(.tertiary)
         }
         .padding(.horizontal, 12).padding(.vertical, 8)
+    }
+
+    private func submitFeedback() {
+        let feedback = feedbackText.trimmingCharacters(in: .whitespaces)
+        guard !feedback.isEmpty else { return }
+        feedbackText = ""
+        model.onRefine?(feedback)
     }
 }
