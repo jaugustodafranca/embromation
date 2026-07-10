@@ -17,10 +17,11 @@
 
 /* Onboarding */
 "onboarding.window_title" = "Bem-vindo ao Embromation";
-"onboarding.title" = "Chega de embromation";
-"onboarding.welcome_body" = "Selecione um texto em qualquer app, aperte o atalho e veja a tradução na hora. Nada sai do seu Mac — sem conta, sem API key.";
+"onboarding.title" = "em·bro·ma·tion (subst.)";
+"onboarding.welcome_body" = "A velha arte brasileira de fingir que fala inglês. Este app acaba com ela: selecione um texto em qualquer app, aperte um atalho e veja a tradução na hora — tudo no seu Mac. Sem conta, sem API key.";
 "onboarding.permission_title" = "Permissão de Acessibilidade";
 "onboarding.permission_body" = "O macOS exige essa permissão para o Embromation ler o texto que você seleciona em outros apps. Ela não é usada para mais nada.";
+"onboarding.permission_hint" = "Habilitou e o botão continua desativado? Remova o Embromation da lista de Acessibilidade e adicione de novo — o macOS pode estar segurando a permissão de um build antigo.";
 "onboarding.granted" = "Concedida";
 "onboarding.download_title" = "Baixando o modelo";
 "onboarding.download_body" = "%@ roda totalmente no seu Mac. Download único.";

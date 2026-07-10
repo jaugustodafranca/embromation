@@ -113,6 +113,10 @@ struct OnboardingView: View {
             }
             if accessibilityGranted {
                 Label(L10n.t("onboarding.granted"), systemImage: "checkmark.circle.fill").foregroundStyle(.green)
+            } else {
+                Text(L10n.t("onboarding.permission_hint"))
+                    .font(.caption).foregroundStyle(.tertiary)
+                    .multilineTextAlignment(.center)
             }
         }
     }
