@@ -16,8 +16,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install XcodeGen
-        run: brew install xcodegen
+      - name: Install XcodeGen and create-dmg
+        run: brew install xcodegen create-dmg
 
       - name: Download Metal toolchain
         run: |
@@ -106,9 +106,23 @@ jobs:
           DMG="Embromation-${VERSION}.dmg"
           mkdir dmg-root
           cp -R "$APP" dmg-root/
-          ln -s /Applications dmg-root/Applications
-          hdiutil create -volname "Embromation" -srcfolder dmg-root \
-            -ov -format UDZO "$DMG"
+          # HiDPI background: combine 1x + 2x into one TIFF Finder understands.
+          tiffutil -cathidpicheck assets/dmg/background.png assets/dmg/background@2x.png \
+            -out dmg-background.tiff
+          # create-dmg styles the window (background, icon slots, Applications
+          # arrow target) via Finder scripting, then emits a compressed image.
+          create-dmg \
+            --volname "Embromation" \
+            --volicon assets/dmg/Embromation.icns \
+            --background dmg-background.tiff \
+            --window-pos 200 120 \
+            --window-size 660 420 \
+            --icon-size 128 \
+            --icon "Embromation.app" 165 220 \
+            --app-drop-link 495 220 \
+            --hide-extension "Embromation.app" \
+            --no-internet-enable \
+            "$DMG" dmg-root/
           codesign --sign "Developer ID Application" --timestamp "$DMG"
           SUBMIT=$(xcrun notarytool submit "$DMG" --wait --output-format json \
             --apple-id "$APPLE_ID" \
