@@ -1,8 +1,19 @@
 import SwiftUI
 import TranslatorCore
 
+private struct TranslationHeightKey: PreferenceKey {
+    static let defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = max(value, nextValue())
+    }
+}
+
 struct PopupView: View {
     @ObservedObject var model: PopupModel
+    @State private var translationHeight: CGFloat = 0
+
+    /// The text area grows with the translation up to this height, then scrolls.
+    private static let maxTranslationHeight: CGFloat = 300
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -15,6 +26,7 @@ struct PopupView: View {
             footer
         }
         .frame(width: 440)
+        .fixedSize(horizontal: false, vertical: true)
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
         .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(.separator))
     }
@@ -56,8 +68,13 @@ struct PopupView: View {
             ScrollView {
                 Text(model.text).textSelection(.enabled)
                     .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(GeometryReader { proxy in
+                        Color.clear.preference(key: TranslationHeightKey.self,
+                                               value: proxy.size.height)
+                    })
             }
-            .frame(maxHeight: 180)
+            .frame(height: min(max(translationHeight, 22), Self.maxTranslationHeight))
+            .onPreferenceChange(TranslationHeightKey.self) { translationHeight = $0 }
         case .failed(let message):
             VStack(alignment: .leading, spacing: 8) {
                 Text(message).foregroundStyle(.red)
