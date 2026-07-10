@@ -33,10 +33,12 @@ struct PopupView: View {
 
     private var header: some View {
         HStack {
-            Text("\(model.sourceCode.uppercased()) → \(model.target.code.uppercased())")
-                .font(.caption.bold())
-                .padding(.horizontal, 8).padding(.vertical, 3)
-                .background(Capsule().fill(.tint.opacity(0.15)))
+            if !model.sourceCode.isEmpty {
+                Text("\(model.sourceCode.uppercased()) → \(model.target.code.uppercased())")
+                    .font(.caption.bold())
+                    .padding(.horizontal, 8).padding(.vertical, 3)
+                    .background(Capsule().fill(.tint.opacity(0.15)))
+            }
             Spacer()
             Text(L10n.t("popup.local_model"))
                 .font(.caption2)

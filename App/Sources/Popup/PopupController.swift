@@ -40,14 +40,28 @@ final class PopupController {
             resizeSubscription = model.objectWillChange
                 .throttle(for: .milliseconds(80), scheduler: RunLoop.main, latest: true)
                 .sink { [weak self] _ in
-                    DispatchQueue.main.async { self?.resizeToFit() }
+                    DispatchQueue.main.async {
+                        self?.resizeToFit()
+                        self?.syncShortcutsToPhase()
+                    }
                 }
         }
         position()
         resizeToFit()
+        syncShortcutsToPhase()
         panel?.orderFrontRegardless()
         installMonitors()
-        KeyboardShortcuts.enable(.popupCopy, .popupReplace)
+    }
+
+    /// ⌘C/⌘⏎ may only exist while a finished translation is on screen.
+    /// Enabling them any earlier swallows the capture's own synthetic ⌘C —
+    /// the hotkey would eat the copy command before the host app sees it.
+    private func syncShortcutsToPhase() {
+        if model.phase == .done {
+            KeyboardShortcuts.enable(.popupCopy, .popupReplace)
+        } else {
+            KeyboardShortcuts.disable(.popupCopy, .popupReplace)
+        }
     }
 
     /// Resizes the panel to the SwiftUI content's ideal height, keeping the
