@@ -65,3 +65,11 @@
 "settings.unload_after" = "Unload from RAM after %d min idle";
 "settings.general" = "General";
 "settings.launch_at_login" = "Launch at login";
+"settings.tab_general" = "General";
+"settings.tab_translation" = "Translation";
+"settings.tab_correction" = "Correction";
+"settings.tab_glossary" = "Glossary";
+"settings.tab_model" = "Model";
+"settings.tone_neutral" = "Neutral";
+"settings.tone_formal" = "Formal";
+"settings.tone_casual" = "Casual";

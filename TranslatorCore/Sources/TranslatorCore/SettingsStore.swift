@@ -53,17 +53,32 @@ public extension SettingsData {
 @MainActor
 public final class SettingsStore: ObservableObject {
     @Published public var data: SettingsData {
-        didSet { persist() }
+        didSet { schedulePersist() }
     }
 
     private let defaults: UserDefaults
+    private var persistTask: Task<Void, Never>?
 
     public init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
         self.data = SettingsData.snapshot(from: defaults)
     }
 
-    private func persist() {
+    /// Persistence is debounced so per-keystroke edits (e.g. the instructions
+    /// field) don't JSON-encode and hit the disk on every character.
+    private func schedulePersist() {
+        persistTask?.cancel()
+        persistTask = Task { [weak self] in
+            try? await Task.sleep(for: .milliseconds(300))
+            guard !Task.isCancelled else { return }
+            self?.flush()
+        }
+    }
+
+    /// Writes pending changes immediately. Call on app termination.
+    public func flush() {
+        persistTask?.cancel()
+        persistTask = nil
         guard let raw = try? JSONEncoder().encode(data) else { return }
         defaults.set(raw, forKey: SettingsData.storageKey)
     }
