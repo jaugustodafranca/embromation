@@ -54,10 +54,11 @@ checklist".
 - `make test` — runs the core test suite (`swift test --package-path
   TranslatorCore`). No MLX involved; nothing is downloaded.
 - `make build` — `gen` then a Debug build of the `Embromation` scheme
-  (`xcodebuild ... -skipMacroValidation`). `-skipMacroValidation` is required
-  because `mlx-swift-lm`'s `MLXHuggingFace` target uses Swift macros
-  (`#hubDownloader` / `#huggingFaceTokenizerLoader`) that Xcode otherwise
-  refuses to run without an interactive "Trust & Enable" prompt.
+  (`xcodebuild ... -skipMacroValidation -skipPackagePluginValidation`). Both
+  flags exist because headless builds can't answer Xcode's interactive
+  "Trust & Enable" prompt: `mlx-swift-lm` ships Swift macros
+  (`#hubDownloader` / `#huggingFaceTokenizerLoader`) and `mlx-swift` ships a
+  build plugin (`CudaBuild`).
 - `make run` — `build` then opens the built `.app`.
 
 The first build downloads and compiles the full MLX stack, which takes
