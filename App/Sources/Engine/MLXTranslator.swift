@@ -34,19 +34,33 @@ actor MLXTranslator: StreamingTranslator {
     private func run(_ request: TranslationRequest,
                      yield: @escaping @Sendable (String) -> Void) async throws {
         let container = try await loadedContainer()
-        let system = PromptBuilder().systemPrompt(source: request.source,
-                                                  target: request.target,
-                                                  tone: request.tone,
-                                                  customInstructions: request.customInstructions,
-                                                  glossary: request.glossary)
+        let builder = PromptBuilder()
+        let system: String
+        switch request.mode {
+        case .translate:
+            system = builder.systemPrompt(source: request.source,
+                                          target: request.target,
+                                          tone: request.tone,
+                                          customInstructions: request.customInstructions,
+                                          glossary: request.glossary)
+        case .correct:
+            system = builder.correctionPrompt(language: request.source,
+                                              tone: request.tone,
+                                              customInstructions: request.customInstructions,
+                                              glossary: request.glossary)
+        }
         try await container.perform { (context: ModelContext) in
             // enable_thinking=false: reasoning models (Qwen3) must answer
             // directly — chain-of-thought would eat the token budget and the
             // user's time. The filter below strips the empty <think/> pair
             // the template still emits.
+            var chat: [Chat.Message] = [.system(system), .user(request.text)]
+            if let refinement = request.refinement {
+                chat.append(.assistant(refinement.previousOutput))
+                chat.append(.user("Feedback: \(refinement.feedback). Produce an improved version. Reply with ONLY the new text, in the same language as before."))
+            }
             let input = try await context.processor.prepare(
-                input: UserInput(chat: [.system(system), .user(request.text)],
-                                 additionalContext: ["enable_thinking": false]))
+                input: UserInput(chat: chat, additionalContext: ["enable_thinking": false]))
             let parameters = GenerateParameters(maxTokens: 2048, temperature: 0.3)
             let stream = try MLXLMCommon.generate(input: input, parameters: parameters, context: context)
             var filter = ThinkBlockFilter()
