@@ -54,7 +54,17 @@ struct SettingsView: View {
             }
 
             Section(L10n.t("settings.shortcut")) {
-                KeyboardShortcuts.Recorder(L10n.t("menu.translate"), name: .translateSelection)
+                KeyboardShortcuts.Recorder(L10n.t("settings.translate_shortcut"), name: .translateSelection)
+            }
+
+            Section(L10n.t("settings.correction")) {
+                KeyboardShortcuts.Recorder(L10n.t("settings.fix_grammar"), name: .fixGrammar)
+                Picker(L10n.t("settings.correction_flow"), selection: $settings.data.correctionReplacesDirectly) {
+                    Text(L10n.t("settings.correction_popup")).tag(false)
+                    Text(L10n.t("settings.correction_direct")).tag(true)
+                }
+                Text(L10n.t("settings.correction_hint"))
+                    .font(.caption).foregroundStyle(.secondary)
             }
 
             Section(L10n.t("settings.model")) {
@@ -70,10 +80,15 @@ struct SettingsView: View {
                 case .ready:
                     Label(L10n.t("settings.downloaded"), systemImage: "checkmark.circle.fill")
                         .foregroundStyle(.green)
-                case .downloading(let fraction):
-                    ProgressView(value: fraction) { Text(L10n.t("settings.downloading")) }
+                case .downloading:
+                    HStack {
+                        ProgressView().controlSize(.small)
+                        Text(L10n.t("settings.downloading"))
+                        Spacer()
+                        Button(L10n.t("onboarding.cancel_download")) { modelStore.cancelDownload() }
+                    }
                 case .missing, .unknown:
-                    Button(L10n.t("settings.download")) { Task { await modelStore.download() } }
+                    Button(L10n.t("settings.download")) { modelStore.download() }
                 }
                 if let message = modelStore.lastErrorMessage {
                     Text(message).font(.caption).foregroundStyle(.red)

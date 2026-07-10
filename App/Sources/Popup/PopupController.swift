@@ -80,10 +80,16 @@ final class PopupController {
         panel.setFrame(frame, display: true)
     }
 
-    func dismiss() {
+    /// Hides the panel without firing onDismiss — used when a new run
+    /// supersedes a visible popup and the caller owns the current task.
+    func hide() {
         KeyboardShortcuts.disable(.popupCopy, .popupReplace)
         removeMonitors()
         panel?.orderOut(nil)
+    }
+
+    func dismiss() {
+        hide()
         onDismiss?()
     }
 
@@ -103,6 +109,9 @@ final class PopupController {
 
     /// Esc anywhere or a click outside the panel dismisses it.
     /// Global monitors require the Accessibility permission we already hold.
+    /// Global monitors never see events delivered to our own key window, so a
+    /// local monitor is also needed for Esc while the feedback field has key
+    /// focus (the panel can become key now that it hosts a TextField).
     private func installMonitors() {
         removeMonitors()
         let clickMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] _ in
@@ -112,7 +121,15 @@ final class PopupController {
             guard event.keyCode == Self.escapeKeyCode else { return }
             Task { @MainActor in self?.dismiss() }
         }
-        monitors = [clickMonitor, escapeMonitor].compactMap { $0 }
+        let localEscape = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
+            // Scope to the panel: Esc in other app windows (Settings,
+            // onboarding) must reach their own responder chains.
+            guard event.keyCode == Self.escapeKeyCode,
+                  event.window === self?.panel else { return event }
+            Task { @MainActor in self?.dismiss() }
+            return nil // consumed
+        }
+        monitors = [clickMonitor, escapeMonitor, localEscape].compactMap { $0 }
     }
 
     private func removeMonitors() {

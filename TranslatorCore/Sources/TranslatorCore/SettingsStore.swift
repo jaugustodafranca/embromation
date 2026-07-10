@@ -9,8 +9,30 @@ public struct SettingsData: Codable, Equatable, Sendable {
     public var selectedModelID = ModelCatalog.default.id
     public var unloadAfterMinutes = 10
     public var didOnboard = false
+    public var correctionReplacesDirectly = false
 
     public init() {}
+
+    private enum CodingKeys: String, CodingKey {
+        case pair, tone, customInstructions, glossary,
+             selectedModelID, unloadAfterMinutes, didOnboard,
+             correctionReplacesDirectly
+    }
+
+    /// Tolerant decoding: any missing key falls back to its default so adding
+    /// fields never resets a user's persisted settings.
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        let defaults = SettingsData()
+        pair = try c.decodeIfPresent(LanguagePair.self, forKey: .pair) ?? defaults.pair
+        tone = try c.decodeIfPresent(Tone.self, forKey: .tone) ?? defaults.tone
+        customInstructions = try c.decodeIfPresent(String.self, forKey: .customInstructions) ?? defaults.customInstructions
+        glossary = try c.decodeIfPresent([String].self, forKey: .glossary) ?? defaults.glossary
+        selectedModelID = try c.decodeIfPresent(String.self, forKey: .selectedModelID) ?? defaults.selectedModelID
+        unloadAfterMinutes = try c.decodeIfPresent(Int.self, forKey: .unloadAfterMinutes) ?? defaults.unloadAfterMinutes
+        didOnboard = try c.decodeIfPresent(Bool.self, forKey: .didOnboard) ?? defaults.didOnboard
+        correctionReplacesDirectly = try c.decodeIfPresent(Bool.self, forKey: .correctionReplacesDirectly) ?? defaults.correctionReplacesDirectly
+    }
 }
 
 public extension SettingsData {
