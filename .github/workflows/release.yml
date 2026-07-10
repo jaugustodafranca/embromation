@@ -61,8 +61,14 @@ jobs:
             -configuration Release -derivedDataPath .build/DerivedData \
             -skipMacroValidation -skipPackagePluginValidation build
           APP=".build/DerivedData/Build/Products/Release/Embromation.app"
-          codesign --verify --deep --strict "$APP"
+          # Non-archive builds sign WITHOUT a secure timestamp, which the
+          # notary rejects as Invalid — re-sign explicitly with one.
+          codesign --force --sign "Developer ID Application" \
+            --options runtime --timestamp \
+            --entitlements App/Embromation.entitlements "$APP"
+          codesign --verify --strict "$APP"
           codesign -dvv "$APP" 2>&1 | grep "Developer ID Application"
+          codesign -dvv "$APP" 2>&1 | grep "Timestamp="
 
       - name: Notarize and staple the app
         env:
@@ -72,10 +78,21 @@ jobs:
         run: |
           APP=".build/DerivedData/Build/Products/Release/Embromation.app"
           ditto -c -k --keepParent "$APP" Embromation.zip
-          xcrun notarytool submit Embromation.zip --wait \
+          SUBMIT=$(xcrun notarytool submit Embromation.zip --wait --output-format json \
             --apple-id "$APPLE_ID" \
             --password "$APPLE_APP_SPECIFIC_PASSWORD" \
-            --team-id "$APPLE_TEAM_ID"
+            --team-id "$APPLE_TEAM_ID")
+          echo "$SUBMIT"
+          STATUS=$(echo "$SUBMIT" | /usr/bin/python3 -c 'import json,sys; print(json.load(sys.stdin)["status"])')
+          if [ "$STATUS" != "Accepted" ]; then
+            # Print WHY Apple rejected it straight into the CI log.
+            ID=$(echo "$SUBMIT" | /usr/bin/python3 -c 'import json,sys; print(json.load(sys.stdin)["id"])')
+            xcrun notarytool log "$ID" \
+              --apple-id "$APPLE_ID" \
+              --password "$APPLE_APP_SPECIFIC_PASSWORD" \
+              --team-id "$APPLE_TEAM_ID"
+            exit 1
+          fi
           xcrun stapler staple "$APP"
 
       - name: Build, sign, notarize and staple the DMG
@@ -92,11 +109,21 @@ jobs:
           ln -s /Applications dmg-root/Applications
           hdiutil create -volname "Embromation" -srcfolder dmg-root \
             -ov -format UDZO "$DMG"
-          codesign --sign "Developer ID Application" "$DMG"
-          xcrun notarytool submit "$DMG" --wait \
+          codesign --sign "Developer ID Application" --timestamp "$DMG"
+          SUBMIT=$(xcrun notarytool submit "$DMG" --wait --output-format json \
             --apple-id "$APPLE_ID" \
             --password "$APPLE_APP_SPECIFIC_PASSWORD" \
-            --team-id "$APPLE_TEAM_ID"
+            --team-id "$APPLE_TEAM_ID")
+          echo "$SUBMIT"
+          STATUS=$(echo "$SUBMIT" | /usr/bin/python3 -c 'import json,sys; print(json.load(sys.stdin)["status"])')
+          if [ "$STATUS" != "Accepted" ]; then
+            ID=$(echo "$SUBMIT" | /usr/bin/python3 -c 'import json,sys; print(json.load(sys.stdin)["id"])')
+            xcrun notarytool log "$ID" \
+              --apple-id "$APPLE_ID" \
+              --password "$APPLE_APP_SPECIFIC_PASSWORD" \
+              --team-id "$APPLE_TEAM_ID"
+            exit 1
+          fi
           xcrun stapler staple "$DMG"
           echo "DMG=$DMG" >> "$GITHUB_ENV"
 
