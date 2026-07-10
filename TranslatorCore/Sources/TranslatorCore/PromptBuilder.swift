@@ -12,6 +12,7 @@ public struct PromptBuilder: Sendable {
     ) -> String {
         var lines: [String] = []
         lines.append("You are a translation engine. Translate the user's message from \(source.englishName) to \(target.englishName).")
+        lines.append("Preserve emoji, keyboard shortcuts (like ⌥⌘T), code, URLs, numbers and any other symbols exactly as written — never drop or translate them.")
         lines.append(tone.promptClause)
         let custom = customInstructions.trimmingCharacters(in: .whitespacesAndNewlines)
         if !custom.isEmpty {
