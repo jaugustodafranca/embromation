@@ -1,6 +1,13 @@
 import AppKit
 import Combine
+import KeyboardShortcuts
 import SwiftUI
+
+extension KeyboardShortcuts.Name {
+    // Active only while the popup is on screen — see enable/disable below.
+    static let popupCopy = Self("popupCopy", default: .init(.c, modifiers: [.command]))
+    static let popupReplace = Self("popupReplace", default: .init(.return, modifiers: [.command]))
+}
 
 @MainActor
 final class PopupController {
@@ -9,6 +16,20 @@ final class PopupController {
     private var monitors: [Any] = []
     private var resizeSubscription: AnyCancellable?
     var onDismiss: (() -> Void)?
+
+    init() {
+        // Registered hotkeys are consumed by the system, so while the popup is
+        // open ⌘C/⌘⏎ act on the translation instead of reaching the host app.
+        KeyboardShortcuts.onKeyUp(for: .popupCopy) { [weak self] in
+            guard let self, self.model.phase == .done else { return }
+            self.model.onCopy?()
+        }
+        KeyboardShortcuts.onKeyUp(for: .popupReplace) { [weak self] in
+            guard let self, self.model.phase == .done else { return }
+            self.model.onReplace?()
+        }
+        KeyboardShortcuts.disable(.popupCopy, .popupReplace)
+    }
 
     func show() {
         if panel == nil {
@@ -26,6 +47,7 @@ final class PopupController {
         resizeToFit()
         panel?.orderFrontRegardless()
         installMonitors()
+        KeyboardShortcuts.enable(.popupCopy, .popupReplace)
     }
 
     /// Resizes the panel to the SwiftUI content's ideal height, keeping the
@@ -45,6 +67,7 @@ final class PopupController {
     }
 
     func dismiss() {
+        KeyboardShortcuts.disable(.popupCopy, .popupReplace)
         removeMonitors()
         panel?.orderOut(nil)
         onDismiss?()
