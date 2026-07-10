@@ -1,0 +1,51 @@
+/* Menu bar */
+"menu.translate" = "Traduzir seleção";
+"menu.settings" = "Ajustes…";
+"menu.quit" = "Sair do Embromation";
+
+/* Popup */
+"popup.working" = "Traduzindo…";
+"popup.no_selection" = "Nenhum texto selecionado — selecione algo e aperte o atalho de novo. Dica: se o app bloquear a captura, copie o texto (⌘C) e tente de novo.";
+"popup.permission" = "A permissão de Acessibilidade é necessária para capturar o texto selecionado.";
+"popup.open_settings" = "Abrir Ajustes do Sistema…";
+"popup.copy" = "Copiar";
+"popup.replace" = "Substituir";
+"popup.retry" = "Tentar de novo";
+"popup.esc" = "esc fecha";
+"popup.local_model" = "modelo local";
+"popup.failed_hint" = "Se isso continuar acontecendo, tente o modelo mais leve nos Ajustes.";
+
+/* Onboarding */
+"onboarding.window_title" = "Bem-vindo ao Embromation";
+"onboarding.title" = "Chega de embromation";
+"onboarding.welcome_body" = "Selecione um texto em qualquer app, aperte o atalho e veja a tradução na hora. Nada sai do seu Mac — sem conta, sem API key.";
+"onboarding.permission_title" = "Permissão de Acessibilidade";
+"onboarding.permission_body" = "O macOS exige essa permissão para o Embromation ler o texto que você seleciona em outros apps. Ela não é usada para mais nada.";
+"onboarding.granted" = "Concedida";
+"onboarding.download_title" = "Baixando o modelo";
+"onboarding.download_body" = "%@ roda totalmente no seu Mac. Download único.";
+"onboarding.model_ready" = "Pronto";
+"onboarding.ready" = "Tudo pronto";
+"onboarding.hint" = "Selecione qualquer texto e aperte ⌥⌘T.";
+"onboarding.continue" = "Continuar";
+"onboarding.start" = "Começar a usar";
+
+/* Settings */
+"settings.languages" = "Idiomas";
+"settings.primary" = "Principal";
+"settings.secondary" = "Secundário";
+"settings.language_hint" = "O idioma detectado é traduzido para o outro lado do par.";
+"settings.translation" = "Tradução";
+"settings.tone" = "Tom";
+"settings.extra_instructions" = "Instruções extras";
+"settings.glossary" = "Nunca traduzir estes termos";
+"settings.add_term" = "Adicionar termo";
+"settings.add" = "Adicionar";
+"settings.shortcut" = "Atalho";
+"settings.model" = "Modelo";
+"settings.download" = "Baixar modelo";
+"settings.downloading" = "Baixando…";
+"settings.downloaded" = "Baixado";
+"settings.unload_after" = "Descarregar da RAM após %d min de inatividade";
+"settings.general" = "Geral";
+"settings.launch_at_login" = "Iniciar no login";

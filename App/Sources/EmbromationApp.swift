@@ -10,12 +10,12 @@ struct EmbromationApp: App {
 
     var body: some Scene {
         MenuBarExtra("Embromation", systemImage: "character.bubble") {
-            Button("Translate selection") { state.coordinator.translateSelection() }
+            Button(L10n.t("menu.translate")) { state.coordinator.translateSelection() }
             Divider()
-            SettingsLink { Text("Settings…") }
+            SettingsLink { Text(L10n.t("menu.settings")) }
                 .keyboardShortcut(",")
             Divider()
-            Button("Quit Embromation") { NSApp.terminate(nil) }
+            Button(L10n.t("menu.quit")) { NSApp.terminate(nil) }
                 .keyboardShortcut("q")
         }
         .onChange(of: scenePhase, initial: true) { _, _ in
@@ -27,7 +27,7 @@ struct EmbromationApp: App {
             SettingsView(settings: state.settings, modelStore: state.modelStore)
         }
 
-        Window("Welcome to Embromation", id: "onboarding") {
+        Window(L10n.t("onboarding.window_title"), id: "onboarding") {
             OnboardingView(settings: state.settings,
                            modelStore: state.modelStore,
                            translator: state.translator) {

@@ -35,7 +35,7 @@ struct OnboardingView: View {
                         .frame(width: 7, height: 7)
                 }
                 Spacer()
-                Button(step == 3 ? "Start using" : "Continue", action: advance)
+                Button(step == 3 ? L10n.t("onboarding.start") : L10n.t("onboarding.continue"), action: advance)
                     .keyboardShortcut(.defaultAction)
                     .disabled(!canAdvance)
             }
@@ -90,8 +90,8 @@ struct OnboardingView: View {
     private var welcome: some View {
         VStack(spacing: 10) {
             Image(systemName: "character.bubble").font(.system(size: 44))
-            Text("Chega de embromation").font(.title2.bold())
-            Text("Select text in any app, press the shortcut, and watch the translation appear instantly. Nothing leaves your Mac — no account, no API keys.")
+            Text(L10n.t("onboarding.title")).font(.title2.bold())
+            Text(L10n.t("onboarding.welcome_body"))
                 .multilineTextAlignment(.center).foregroundStyle(.secondary)
         }
     }
@@ -99,15 +99,15 @@ struct OnboardingView: View {
     private var permission: some View {
         VStack(spacing: 10) {
             Image(systemName: "lock.shield").font(.system(size: 40))
-            Text("Accessibility permission").font(.title3.bold())
-            Text("macOS requires this permission so Embromation can read the text you select in other apps. It is used for nothing else.")
+            Text(L10n.t("onboarding.permission_title")).font(.title3.bold())
+            Text(L10n.t("onboarding.permission_body"))
                 .multilineTextAlignment(.center).foregroundStyle(.secondary)
-            Button("Open System Settings…") {
+            Button(L10n.t("popup.open_settings")) {
                 NSWorkspace.shared.open(URL(string:
                     "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")!)
             }
             if accessibilityGranted {
-                Label("Granted", systemImage: "checkmark.circle.fill").foregroundStyle(.green)
+                Label(L10n.t("onboarding.granted"), systemImage: "checkmark.circle.fill").foregroundStyle(.green)
             }
         }
     }
@@ -115,8 +115,8 @@ struct OnboardingView: View {
     private var download: some View {
         VStack(spacing: 10) {
             Image(systemName: "shippingbox").font(.system(size: 40))
-            Text("Downloading the model").font(.title3.bold())
-            Text("\(modelStore.selectedSpec.displayName) runs entirely on your Mac. One-time download.")
+            Text(L10n.t("onboarding.download_title")).font(.title3.bold())
+            Text(String(format: L10n.t("onboarding.download_body"), modelStore.selectedSpec.displayName))
                 .multilineTextAlignment(.center).foregroundStyle(.secondary)
             if case .downloading(let fraction) = modelStore.state {
                 ProgressView(value: fraction)
@@ -124,11 +124,11 @@ struct OnboardingView: View {
                     .font(.caption).foregroundStyle(.secondary)
             }
             if modelStore.state == .ready {
-                Label("Ready", systemImage: "checkmark.circle.fill").foregroundStyle(.green)
+                Label(L10n.t("onboarding.model_ready"), systemImage: "checkmark.circle.fill").foregroundStyle(.green)
             }
             if let message = modelStore.lastErrorMessage {
                 Text(message).font(.caption).foregroundStyle(.red)
-                Button("Try again") { Task { await modelStore.download() } }
+                Button(L10n.t("popup.retry")) { Task { await modelStore.download() } }
             }
         }
     }
@@ -136,10 +136,10 @@ struct OnboardingView: View {
     private var done: some View {
         VStack(spacing: 10) {
             Image(systemName: "checkmark.seal").font(.system(size: 40))
-            Text("All set").font(.title3.bold())
+            Text(L10n.t("onboarding.ready")).font(.title3.bold())
             Text("“\(Self.demoSentence)”").italic()
             Text(demoText.isEmpty ? "…" : demoText).bold()
-            Text("Select any text and press ⌥⌘T.").foregroundStyle(.secondary)
+            Text(L10n.t("onboarding.hint")).foregroundStyle(.secondary)
         }
     }
 }
