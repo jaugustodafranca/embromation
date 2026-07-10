@@ -20,7 +20,14 @@ final class TranslationCoordinator {
         self.popup = popup
         popup.onDismiss = { [weak self] in self?.currentTask?.cancel() }
         popup.model.onRetarget = { [weak self] lang in self?.retarget(lang) }
-        popup.model.onRetry = { [weak self] in self?.translateSelection() }
+        popup.model.onRetry = { [weak self] in
+            guard let self else { return }
+            if self.popup.model.isCorrection {
+                self.correctSelection()
+            } else {
+                self.translateSelection()
+            }
+        }
         popup.model.onRefine = { [weak self] feedback in self?.refine(feedback) }
         popup.model.onCopy = { [weak self] in
             guard let self else { return }
@@ -201,6 +208,8 @@ final class TranslationCoordinator {
         // task running THIS function; cancelling it collapses the replace
         // settle delay and races the clipboard restore against the paste.
         popup.hide()
-        await SelectionReplacer().replaceSelection(with: corrected)
+        // Detached so a superseding run's cancel can't collapse the paste
+        // settle delay (same shape as onReplace).
+        await Task { await SelectionReplacer().replaceSelection(with: corrected) }.value
     }
 }
