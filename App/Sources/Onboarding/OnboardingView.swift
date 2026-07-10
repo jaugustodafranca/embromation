@@ -132,13 +132,15 @@ struct OnboardingView: View {
                 Text(String(format: L10n.t("onboarding.downloading_size"), modelStore.selectedSpec.approxSizeGB))
                     .font(.caption).foregroundStyle(.secondary)
                 Button(L10n.t("onboarding.cancel_download")) { modelStore.cancelDownload() }
-            }
-            if modelStore.state == .ready {
+            } else if modelStore.state == .ready {
                 Label(L10n.t("onboarding.model_ready"), systemImage: "checkmark.circle.fill").foregroundStyle(.green)
-            }
-            if let message = modelStore.lastErrorMessage {
-                Text(message).font(.caption).foregroundStyle(.red)
-                Button(L10n.t("popup.retry")) { modelStore.download() }
+            } else {
+                if let message = modelStore.lastErrorMessage {
+                    Text(message).font(.caption).foregroundStyle(.red)
+                }
+                Button(L10n.t(modelStore.lastErrorMessage == nil ? "settings.download" : "popup.retry")) {
+                    modelStore.download()
+                }
             }
         }
     }
