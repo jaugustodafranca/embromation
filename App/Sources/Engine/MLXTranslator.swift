@@ -34,17 +34,19 @@ actor MLXTranslator: StreamingTranslator {
     private func run(_ request: TranslationRequest,
                      yield: @escaping @Sendable (String) -> Void) async throws {
         let container = try await loadedContainer()
-        // "/no_think" is Qwen3's soft switch to skip chain-of-thought; other
-        // models ignore it. The filter below strips the (possibly empty)
-        // <think>…</think> block the model still emits.
         let system = PromptBuilder().systemPrompt(source: request.source,
                                                   target: request.target,
                                                   tone: request.tone,
                                                   customInstructions: request.customInstructions,
-                                                  glossary: request.glossary) + "\n/no_think"
+                                                  glossary: request.glossary)
         try await container.perform { (context: ModelContext) in
+            // enable_thinking=false: reasoning models (Qwen3) must answer
+            // directly — chain-of-thought would eat the token budget and the
+            // user's time. The filter below strips the empty <think/> pair
+            // the template still emits.
             let input = try await context.processor.prepare(
-                input: UserInput(chat: [.system(system), .user(request.text)]))
+                input: UserInput(chat: [.system(system), .user(request.text)],
+                                 additionalContext: ["enable_thinking": false]))
             let parameters = GenerateParameters(maxTokens: 2048, temperature: 0.3)
             let stream = try MLXLMCommon.generate(input: input, parameters: parameters, context: context)
             var filter = ThinkBlockFilter()

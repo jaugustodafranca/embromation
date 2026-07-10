@@ -11,6 +11,7 @@
 "popup.copy" = "Copy";
 "popup.replace" = "Replace";
 "popup.retry" = "Try again";
+"popup.empty_response" = "The model returned an empty response — try again.";
 "popup.esc" = "esc closes";
 "popup.local_model" = "local model";
 "popup.failed_hint" = "If this keeps happening, try the lighter model in Settings.";

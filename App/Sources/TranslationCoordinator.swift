@@ -105,7 +105,11 @@ final class TranslationCoordinator {
                 popup.model.text += chunk
             }
             guard !Task.isCancelled else { return }
-            popup.model.phase = .done
+            if popup.model.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                popup.model.phase = .failed(L10n.t("popup.empty_response"))
+            } else {
+                popup.model.phase = .done
+            }
         } catch is CancellationError {
             // dismissed or superseded — nothing to do
         } catch {
