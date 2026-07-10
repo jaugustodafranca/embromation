@@ -35,6 +35,13 @@ final class PromptBuilderTests: XCTestCase {
         XCTAssertFalse(p.contains("  Keep tech terms.  "))
     }
 
+    func testDemandsSymbolAndEmojiPreservation() {
+        let p = builder.systemPrompt(source: .english, target: .portuguese,
+                                     tone: .neutral, customInstructions: "", glossary: [])
+        XCTAssertTrue(p.contains("Preserve emoji"))
+        XCTAssertTrue(p.contains("keyboard shortcuts"))
+    }
+
     func testDemandsTranslationOnlyOutput() {
         let p = builder.systemPrompt(source: .english, target: .portuguese,
                                      tone: .neutral, customInstructions: "", glossary: [])
