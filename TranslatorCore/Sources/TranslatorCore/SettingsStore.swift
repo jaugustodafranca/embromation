@@ -13,6 +13,17 @@ public struct SettingsData: Codable, Equatable, Sendable {
     public init() {}
 }
 
+public extension SettingsData {
+    /// Thread-safe snapshot of persisted settings, for non-main-actor readers.
+    static func snapshot(from defaults: UserDefaults = .standard) -> SettingsData {
+        guard let raw = defaults.data(forKey: "settings.v1"),
+              let decoded = try? JSONDecoder().decode(SettingsData.self, from: raw) else {
+            return SettingsData()
+        }
+        return decoded
+    }
+}
+
 @MainActor
 public final class SettingsStore: ObservableObject {
     @Published public var data: SettingsData {

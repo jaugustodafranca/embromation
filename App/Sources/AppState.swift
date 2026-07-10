@@ -7,8 +7,11 @@ import TranslatorCore
 final class AppState: ObservableObject {
     let settings = SettingsStore()
     let popup = PopupController()
-    // Swapped for MLXTranslator in Task 10.
-    let translator: StreamingTranslator = FakeTranslator(wordDelay: .milliseconds(40))
+    lazy var modelStore = ModelStore(settings: settings)
+    lazy var translator: StreamingTranslator = MLXTranslator(
+        modelID: { SettingsData.snapshot().selectedModelID },
+        unloadAfterMinutes: { SettingsData.snapshot().unloadAfterMinutes }
+    )
     lazy var coordinator = TranslationCoordinator(settings: settings,
                                                   capture: SelectionCapture(),
                                                   translator: translator,
