@@ -10,6 +10,7 @@ final class TranslationCoordinator {
     private let popup: PopupController
     private var currentTask: Task<Void, Never>?
     private var lastCapturedText = ""
+    private var pendingClipboardChangeCount: Int?
 
     init(settings: SettingsStore, capture: SelectionCapturing,
          translator: StreamingTranslator, popup: PopupController) {
@@ -44,20 +45,28 @@ final class TranslationCoordinator {
             return
         }
         var text = await capture.captureSelectedText() ?? ""
+        guard !Task.isCancelled else { return }
         if text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            // Spec §6: when capture fails (app blocks AX and ⌘C), fall back to the
-            // clipboard so "copy manually, press the shortcut again" works.
-            text = NSPasteboard.general.string(forType: .string) ?? ""
-        }
-        guard !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-            popup.model.phase = .noSelection
-            return
+            // Two-step fallback (spec §6): only translate the clipboard if it changed
+            // since we last showed "no selection" — i.e. the user copied on purpose.
+            let pasteboard = NSPasteboard.general
+            if let recorded = pendingClipboardChangeCount,
+               pasteboard.changeCount != recorded {
+                text = pasteboard.string(forType: .string) ?? ""
+            }
+            if text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                pendingClipboardChangeCount = pasteboard.changeCount
+                popup.model.phase = .noSelection
+                return
+            }
+            pendingClipboardChangeCount = nil
         }
         lastCapturedText = text
         await stream(text: text, forcedTarget: nil)
     }
 
     private func stream(text: String, forcedTarget: Language?) async {
+        guard !Task.isCancelled else { return }
         let detected = LanguageDetector().detect(text)
         let target = forcedTarget
             ?? LanguagePairResolver().target(forDetected: detected, pair: settings.data.pair)
@@ -77,6 +86,7 @@ final class TranslationCoordinator {
                 try Task.checkCancellation()
                 popup.model.text += chunk
             }
+            guard !Task.isCancelled else { return }
             popup.model.phase = .done
         } catch is CancellationError {
             // dismissed or superseded — nothing to do

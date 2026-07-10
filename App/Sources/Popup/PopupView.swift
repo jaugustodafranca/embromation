@@ -85,6 +85,7 @@ struct PopupView: View {
             }
             .labelsHidden()
             .frame(width: 150)
+            .disabled(!(model.phase == .streaming || model.phase == .done))
             Spacer()
             Text("esc closes").font(.caption2).foregroundStyle(.tertiary)
         }
