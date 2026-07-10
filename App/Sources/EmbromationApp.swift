@@ -8,12 +8,7 @@ struct EmbromationApp: App {
 
     var body: some Scene {
         MenuBarExtra("Embromation", systemImage: "character.bubble") {
-            Button("Debug: capture selection") {
-                Task {
-                    let text = await SelectionCapture().captureSelectedText()
-                    NSLog("[embromation] captured: \(text ?? "<nil>")")
-                }
-            }
+            Button("Translate selection") { state.coordinator.translateSelection() }
             Divider()
             Button("Quit Embromation") { NSApp.terminate(nil) }
                 .keyboardShortcut("q")
