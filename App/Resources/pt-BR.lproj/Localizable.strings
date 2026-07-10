@@ -11,6 +11,7 @@
 "popup.copy" = "Copiar";
 "popup.replace" = "Substituir";
 "popup.retry" = "Tentar de novo";
+"popup.empty_response" = "O modelo retornou uma resposta vazia — tente de novo.";
 "popup.esc" = "esc fecha";
 "popup.local_model" = "modelo local";
 "popup.failed_hint" = "Se isso continuar acontecendo, tente o modelo mais leve nos Ajustes.";
