@@ -1,0 +1,63 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# A newer push supersedes any in-flight run for the same branch — don't pay
+# (macOS minutes bill at 10x on private repos) for builds nobody will read.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  core-tests:
+    name: TranslatorCore tests
+    runs-on: macos-15
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run tests
+        run: swift test --package-path TranslatorCore
+
+  app-build:
+    name: App build (arm64, unsigned)
+    # macos-26 carries Xcode 26 (matching local dev); macos-15 tops out at
+    # Xcode 16, which can't build the pinned mlx-swift-lm toolchain line.
+    runs-on: macos-26
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install XcodeGen
+        run: brew install xcodegen
+      - name: Download Metal toolchain
+        # Xcode 26 ships the Metal compiler as a separate component; older
+        # Xcodes bundle it and don't have the flag at all.
+        run: |
+          xcodebuild -version
+          if xcodebuild -help 2>/dev/null | grep -q downloadComponent; then
+            xcodebuild -downloadComponent MetalToolchain
+          else
+            echo "Metal toolchain bundled with this Xcode — skipping"
+          fi
+      - name: Generate project
+        run: xcodegen generate
+      - name: Cache compiled dependencies
+        # Almost all of the build time is the MLX C++/Metal stack, which only
+        # changes when the pins in project.yml change. Warm-cache builds only
+        # recompile the app sources.
+        uses: actions/cache@v4
+        with:
+          path: .build/DerivedData
+          key: derived-data-${{ runner.os }}-${{ hashFiles('project.yml') }}
+          restore-keys: derived-data-${{ runner.os }}-
+      - name: Build
+        # -skipMacroValidation / -skipPackagePluginValidation: headless Xcode
+        # has no interactive "Trust & Enable" prompt for mlx-swift's macros
+        # and its CudaBuild plugin.
+        run: |
+          xcodebuild -project Embromation.xcodeproj -scheme Embromation \
+            -configuration Release -derivedDataPath .build/DerivedData \
+            -skipMacroValidation -skipPackagePluginValidation \
+            CODE_SIGNING_ALLOWED=NO build

@@ -24,3 +24,6 @@ Package.resolved
 
 # Local model cache never lives in the repo
 models/
+
+# XcodeGen-generated project + build products
+Embromation.xcodeproj/

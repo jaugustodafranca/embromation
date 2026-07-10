@@ -15,9 +15,7 @@ no account.
 - 🛡️ Glossary of protected terms — "deploy", "commit" and "pipeline" stay put
 - 🌐 Auto-detected language pair: one hotkey translates both directions
 
-**Status:** 🚧 design phase. The
-[design spec](docs/superpowers/specs/2026-07-09-embromation-design.md) is
-approved; implementation starts next.
+**Status:** 🚧 MVP implemented — pre-release polish and manual QA in progress.
 
 Requires macOS 14+ on Apple Silicon.
 
