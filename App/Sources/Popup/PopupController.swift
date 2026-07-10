@@ -122,7 +122,10 @@ final class PopupController {
             Task { @MainActor in self?.dismiss() }
         }
         let localEscape = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
-            guard event.keyCode == Self.escapeKeyCode else { return event }
+            // Scope to the panel: Esc in other app windows (Settings,
+            // onboarding) must reach their own responder chains.
+            guard event.keyCode == Self.escapeKeyCode,
+                  event.window === self?.panel else { return event }
             Task { @MainActor in self?.dismiss() }
             return nil // consumed
         }
