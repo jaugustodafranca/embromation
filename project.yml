@@ -10,6 +10,17 @@ packages:
   KeyboardShortcuts:
     url: https://github.com/sindresorhus/KeyboardShortcuts
     from: 2.0.0
+  # NOTE: as of mid-2026, MLXLLM/MLXLMCommon moved out of mlx-swift-examples
+  # into their own package. See task-10-report.md for the full API-drift writeup.
+  MLXSwiftLM:
+    url: https://github.com/ml-explore/mlx-swift-lm.git
+    revision: feff32d610efd6b4b074121758b7c345344e6473
+  SwiftHuggingFace:
+    url: https://github.com/huggingface/swift-huggingface
+    from: 0.9.0
+  SwiftTransformers:
+    url: https://github.com/huggingface/swift-transformers
+    from: 1.3.0
 targets:
   Embromation:
     type: application
@@ -30,3 +41,13 @@ targets:
     dependencies:
       - package: TranslatorCore
       - package: KeyboardShortcuts
+      - package: MLXSwiftLM
+        product: MLXLLM
+      - package: MLXSwiftLM
+        product: MLXLMCommon
+      - package: MLXSwiftLM
+        product: MLXHuggingFace
+      - package: SwiftHuggingFace
+        product: HuggingFace
+      - package: SwiftTransformers
+        product: Tokenizers
