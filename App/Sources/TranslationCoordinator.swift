@@ -59,8 +59,8 @@ final class TranslationCoordinator {
                 popup.model.phase = .noSelection
                 return
             }
-            pendingClipboardChangeCount = nil
         }
+        pendingClipboardChangeCount = nil
         lastCapturedText = text
         await stream(text: text, forcedTarget: nil)
     }
