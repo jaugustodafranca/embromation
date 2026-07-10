@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.0.0 — 2026-07-10
+## v1.0.0 (2026-07-10)
 
 First public release. 🇧🇷
 
@@ -11,7 +11,7 @@ First public release. 🇧🇷
 - Fix grammar (⌃G): proofreading mode that corrects grammar, spelling and
   punctuation keeping the language, meaning and tone.
 - Feedback loop: tell the model what to improve and regenerate, right in the
-  popup. Session-only — nothing is stored or sent anywhere.
+  popup. It lives only in that popup session and nothing is stored or sent anywhere.
 - Configurable correction flow: review in the popup or replace your selection
   directly.
 - Tone control (neutral/formal/casual), free-form instructions, and a
@@ -23,7 +23,7 @@ First public release. 🇧🇷
 
 ### Privacy
 - The ONLY network call in the entire app is the one-time model download
-  from Hugging Face. No accounts, no API keys, no telemetry — auditable in
+  from Hugging Face. No accounts, no API keys, no telemetry. You can audit all of it in
   this repository.
 
 Requires macOS 14+ on Apple Silicon.

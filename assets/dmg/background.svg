@@ -1,0 +1,31 @@
+<svg viewBox="0 0 1320 840" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0E7266"/>
+      <stop offset="1" stop-color="#06423A"/>
+    </linearGradient>
+  </defs>
+  <rect width="1320" height="840" fill="url(#bg)"/>
+
+  <!-- brand mark: speech bubble with ã, top center -->
+  <g transform="translate(585, 60) scale(0.32)">
+    <path d="M256 118 C 172 118 108 166 108 230 C 108 270 132 303 170 322 L 148 384 C 145 393 154 400 162 395 L 236 349 C 243 350 249 350 256 350 C 340 350 404 294 404 230 C 404 166 340 118 256 118 Z" fill="#FFFFFF" opacity="0.95"/>
+    <path d="M202 202 C 216 180 238 180 252 198 C 266 216 288 216 302 194" stroke="#0B6B61" stroke-width="25" stroke-linecap="round" fill="none"/>
+    <circle cx="252" cy="272" r="35" stroke="#0B6B61" stroke-width="25" fill="none"/>
+    <path d="M287 233 L287 309" stroke="#0B6B61" stroke-width="25" stroke-linecap="round"/>
+  </g>
+
+  <text x="660" y="248" text-anchor="middle" fill="#FFFFFF" opacity="0.92"
+        font-family="-apple-system, 'SF Pro Display', 'Helvetica Neue', sans-serif"
+        font-size="44" font-weight="700" letter-spacing="0.5">Embromation</text>
+
+  <!-- arrow between the two icon slots (icons sit at y≈440 center) -->
+  <g stroke="#FFFFFF" stroke-width="16" stroke-linecap="round" opacity="0.65" fill="none">
+    <path d="M 520 440 L 780 440"/>
+    <path d="M 726 386 L 790 440 L 726 494"/>
+  </g>
+
+  <text x="660" y="762" text-anchor="middle" fill="#FFFFFF" opacity="0.55"
+        font-family="-apple-system, 'SF Pro Text', 'Helvetica Neue', sans-serif"
+        font-size="30" font-style="italic">Chega de embromation.</text>
+</svg>

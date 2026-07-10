@@ -7,13 +7,13 @@
 
 /* Popup */
 "popup.working" = "Traduzindo…";
-"popup.no_selection" = "Nenhum texto selecionado — selecione algo e aperte o atalho de novo. Dica: se o app bloquear a captura, copie o texto (⌘C) e tente de novo.";
+"popup.no_selection" = "Nenhum texto selecionado. Selecione algo e aperte o atalho de novo. Se o app bloquear a captura, copie o texto com ⌘C e tente outra vez.";
 "popup.permission" = "A permissão de Acessibilidade é necessária para capturar o texto selecionado.";
 "popup.open_settings" = "Abrir Ajustes do Sistema…";
 "popup.copy" = "Copiar";
 "popup.replace" = "Substituir";
 "popup.retry" = "Tentar de novo";
-"popup.empty_response" = "O modelo retornou uma resposta vazia — tente de novo.";
+"popup.empty_response" = "O modelo retornou uma resposta vazia. Tente de novo.";
 "popup.esc" = "esc fecha";
 "popup.local_model" = "modelo local";
 "popup.failed_hint" = "Se isso continuar acontecendo, tente o modelo mais leve nos Ajustes.";
@@ -23,18 +23,18 @@
 /* Onboarding */
 "onboarding.window_title" = "Bem-vindo ao Embromation";
 "onboarding.title" = "em·bro·ma·tion (subst.)";
-"onboarding.welcome_body" = "A velha arte brasileira de fingir que fala inglês. Este app acaba com ela: selecione um texto em qualquer app, aperte um atalho e veja a tradução na hora — tudo no seu Mac. Sem conta, sem API key.";
+"onboarding.welcome_body" = "A velha arte brasileira de fingir que fala inglês. Este app acaba com ela: selecione um texto em qualquer app, aperte um atalho e leia a tradução ali mesmo. Tudo roda no seu Mac, sem conta e sem API key.";
 "onboarding.permission_title" = "Permissão de Acessibilidade";
 "onboarding.permission_body" = "O macOS exige essa permissão para o Embromation ler o texto que você seleciona em outros apps. Ela não é usada para mais nada.";
-"onboarding.permission_hint" = "Habilitou e o botão continua desativado? Remova o Embromation da lista de Acessibilidade e adicione de novo — o macOS pode estar segurando a permissão de um build antigo.";
+"onboarding.permission_hint" = "Habilitou e o botão continua desativado? Remova o Embromation da lista de Acessibilidade e adicione de novo. Às vezes o macOS guarda a permissão de um build antigo.";
 "onboarding.granted" = "Concedida";
 "onboarding.download_title" = "Baixando o modelo";
 "onboarding.download_body" = "%@ roda totalmente no seu Mac. Download único.";
-"onboarding.downloading_size" = "Baixando ~%.1f GB — a barra é tímida, mas os bytes estão fluindo.";
+"onboarding.downloading_size" = "Baixando uns %.1f GB. A barra é tímida, mas os bytes estão fluindo.";
 "onboarding.cancel_download" = "Cancelar download";
 "onboarding.model_ready" = "Pronto";
 "onboarding.ready" = "Tudo pronto";
-"onboarding.hint" = "Selecione qualquer texto e aperte ⌃T para traduzir — ou ⌃G para corrigir.";
+"onboarding.hint" = "Selecione qualquer texto e aperte ⌃T para traduzir, ou ⌃G para corrigir.";
 "onboarding.continue" = "Continuar";
 "onboarding.start" = "Começar a usar";
 
@@ -46,7 +46,7 @@
 "settings.translation" = "Tradução";
 "settings.tone" = "Tom";
 "settings.extra_instructions" = "Instruções extras";
-"settings.extra_instructions_placeholder" = "ex.: trabalho com tecnologia — mantenha termos de programação em inglês.";
+"settings.extra_instructions_placeholder" = "ex.: trabalho com tecnologia, então mantenha os termos de programação em inglês.";
 "settings.glossary" = "Nunca traduzir estes termos";
 "settings.add_term" = "Adicionar termo";
 "settings.add" = "Adicionar";
@@ -65,3 +65,12 @@
 "settings.unload_after" = "Descarregar da RAM após %d min de inatividade";
 "settings.general" = "Geral";
 "settings.launch_at_login" = "Iniciar no login";
+"settings.tab_general" = "Geral";
+"settings.tab_translation" = "Tradução";
+"settings.tab_correction" = "Correção";
+"settings.tab_glossary" = "Glossário";
+"settings.tab_model" = "Modelo";
+"settings.tone_neutral" = "Neutro";
+"settings.tone_formal" = "Formal";
+"settings.tone_casual" = "Casual";
+"settings.correction_instructions_placeholder" = "ex.: mantenha meu tom informal e as minhas gírias.";

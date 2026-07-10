@@ -6,7 +6,26 @@ import TranslatorCore
 struct SettingsView: View {
     @ObservedObject var settings: SettingsStore
     @ObservedObject var modelStore: ModelStore
-    @State private var newTerm = ""
+
+    var body: some View {
+        TabView {
+            GeneralTab(settings: settings)
+                .tabItem { Label(L10n.t("settings.tab_general"), systemImage: "gearshape") }
+            TranslationTab(settings: settings)
+                .tabItem { Label(L10n.t("settings.tab_translation"), systemImage: "character.bubble") }
+            CorrectionTab(settings: settings)
+                .tabItem { Label(L10n.t("settings.tab_correction"), systemImage: "text.badge.checkmark") }
+            GlossaryTab(settings: settings)
+                .tabItem { Label(L10n.t("settings.tab_glossary"), systemImage: "book.closed") }
+            ModelTab(settings: settings, modelStore: modelStore)
+                .tabItem { Label(L10n.t("settings.tab_model"), systemImage: "cpu") }
+        }
+        .frame(width: 540)
+    }
+}
+
+private struct GeneralTab: View {
+    @ObservedObject var settings: SettingsStore
 
     var body: some View {
         Form {
@@ -20,20 +39,94 @@ struct SettingsView: View {
                 Text(L10n.t("settings.language_hint"))
                     .font(.caption).foregroundStyle(.secondary)
             }
+            Section(L10n.t("settings.general")) {
+                Toggle(L10n.t("settings.launch_at_login"), isOn: launchAtLogin)
+            }
+        }
+        .formStyle(.grouped)
+        .fixedSize(horizontal: false, vertical: true)
+    }
 
-            Section(L10n.t("settings.translation")) {
-                Picker(L10n.t("settings.tone"), selection: $settings.data.tone) {
-                    ForEach(Tone.allCases, id: \.self) { Text($0.rawValue.capitalized).tag($0) }
-                }
-                .pickerStyle(.segmented)
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(L10n.t("settings.extra_instructions"))
-                    TextField(L10n.t("settings.extra_instructions_placeholder"),
-                              text: $settings.data.customInstructions, axis: .vertical)
-                        .lineLimit(3...6)
+    /// Spec §4.7 "iniciar no login" — backed by SMAppService (macOS 13+).
+    private var launchAtLogin: Binding<Bool> {
+        Binding(
+            get: { SMAppService.mainApp.status == .enabled },
+            set: { enabled in
+                do {
+                    if enabled { try SMAppService.mainApp.register() }
+                    else { try SMAppService.mainApp.unregister() }
+                } catch {
+                    NSLog("[embromation] launch-at-login failed: \(error)")
                 }
             }
+        )
+    }
+}
 
+private struct TranslationTab: View {
+    @ObservedObject var settings: SettingsStore
+
+    var body: some View {
+        Form {
+            Section(L10n.t("settings.shortcut")) {
+                KeyboardShortcuts.Recorder(L10n.t("settings.translate_shortcut"), name: .translateSelection)
+            }
+            Section {
+                Picker(L10n.t("settings.tone"), selection: $settings.data.tone) {
+                    ForEach(Tone.allCases, id: \.self) { tone in
+                        Text(L10n.t("settings.tone_\(tone.rawValue)")).tag(tone)
+                    }
+                }
+                .pickerStyle(.segmented)
+            }
+            Section(L10n.t("settings.extra_instructions")) {
+                TextField("", text: $settings.data.customInstructions,
+                          prompt: Text(L10n.t("settings.extra_instructions_placeholder")),
+                          axis: .vertical)
+                    .labelsHidden()
+                    .lineLimit(4...8)
+                    .multilineTextAlignment(.leading)
+            }
+        }
+        .formStyle(.grouped)
+        .fixedSize(horizontal: false, vertical: true)
+    }
+}
+
+private struct CorrectionTab: View {
+    @ObservedObject var settings: SettingsStore
+
+    var body: some View {
+        Form {
+            Section(L10n.t("settings.correction")) {
+                KeyboardShortcuts.Recorder(L10n.t("settings.fix_grammar"), name: .fixGrammar)
+                Picker(L10n.t("settings.correction_flow"), selection: $settings.data.correctionReplacesDirectly) {
+                    Text(L10n.t("settings.correction_popup")).tag(false)
+                    Text(L10n.t("settings.correction_direct")).tag(true)
+                }
+                Text(L10n.t("settings.correction_hint"))
+                    .font(.caption).foregroundStyle(.secondary)
+            }
+            Section(L10n.t("settings.extra_instructions")) {
+                TextField("", text: $settings.data.correctionInstructions,
+                          prompt: Text(L10n.t("settings.correction_instructions_placeholder")),
+                          axis: .vertical)
+                    .labelsHidden()
+                    .lineLimit(4...8)
+                    .multilineTextAlignment(.leading)
+            }
+        }
+        .formStyle(.grouped)
+        .fixedSize(horizontal: false, vertical: true)
+    }
+}
+
+private struct GlossaryTab: View {
+    @ObservedObject var settings: SettingsStore
+    @State private var newTerm = ""
+
+    var body: some View {
+        Form {
             Section(L10n.t("settings.glossary")) {
                 ForEach(settings.data.glossary, id: \.self) { term in
                     HStack {
@@ -52,21 +145,25 @@ struct SettingsView: View {
                         .disabled(newTerm.trimmingCharacters(in: .whitespaces).isEmpty)
                 }
             }
+        }
+        .formStyle(.grouped)
+        .fixedSize(horizontal: false, vertical: true)
+    }
 
-            Section(L10n.t("settings.shortcut")) {
-                KeyboardShortcuts.Recorder(L10n.t("settings.translate_shortcut"), name: .translateSelection)
-            }
+    private func addTerm() {
+        let term = newTerm.trimmingCharacters(in: .whitespaces)
+        guard !term.isEmpty, !settings.data.glossary.contains(term) else { return }
+        settings.data.glossary.append(term)
+        newTerm = ""
+    }
+}
 
-            Section(L10n.t("settings.correction")) {
-                KeyboardShortcuts.Recorder(L10n.t("settings.fix_grammar"), name: .fixGrammar)
-                Picker(L10n.t("settings.correction_flow"), selection: $settings.data.correctionReplacesDirectly) {
-                    Text(L10n.t("settings.correction_popup")).tag(false)
-                    Text(L10n.t("settings.correction_direct")).tag(true)
-                }
-                Text(L10n.t("settings.correction_hint"))
-                    .font(.caption).foregroundStyle(.secondary)
-            }
+private struct ModelTab: View {
+    @ObservedObject var settings: SettingsStore
+    @ObservedObject var modelStore: ModelStore
 
+    var body: some View {
+        Form {
             Section(L10n.t("settings.model")) {
                 Picker(L10n.t("settings.model"), selection: $settings.data.selectedModelID) {
                     ForEach(ModelCatalog.all) { spec in
@@ -81,7 +178,7 @@ struct SettingsView: View {
                     Label(L10n.t("settings.downloaded"), systemImage: "checkmark.circle.fill")
                         .foregroundStyle(.green)
                 case .downloading:
-                    HStack {
+                    HStack(spacing: 8) {
                         ProgressView().controlSize(.small)
                         Text(L10n.t("settings.downloading"))
                         Spacer()
@@ -97,35 +194,8 @@ struct SettingsView: View {
                 Stepper(String(format: L10n.t("settings.unload_after"), settings.data.unloadAfterMinutes),
                         value: $settings.data.unloadAfterMinutes, in: 1...60)
             }
-
-            Section(L10n.t("settings.general")) {
-                Toggle(L10n.t("settings.launch_at_login"), isOn: launchAtLogin)
-            }
         }
         .formStyle(.grouped)
-        .frame(width: 480)
         .fixedSize(horizontal: false, vertical: true)
-    }
-
-    /// Spec §4.7 "iniciar no login" — backed by SMAppService (macOS 13+).
-    private var launchAtLogin: Binding<Bool> {
-        Binding(
-            get: { SMAppService.mainApp.status == .enabled },
-            set: { enabled in
-                do {
-                    if enabled { try SMAppService.mainApp.register() }
-                    else { try SMAppService.mainApp.unregister() }
-                } catch {
-                    NSLog("[embromation] launch-at-login failed: \(error)")
-                }
-            }
-        )
-    }
-
-    private func addTerm() {
-        let term = newTerm.trimmingCharacters(in: .whitespaces)
-        guard !term.isEmpty, !settings.data.glossary.contains(term) else { return }
-        settings.data.glossary.append(term)
-        newTerm = ""
     }
 }
