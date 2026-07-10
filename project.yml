@@ -9,7 +9,7 @@ packages:
     path: TranslatorCore
   KeyboardShortcuts:
     url: https://github.com/sindresorhus/KeyboardShortcuts
-    from: 2.0.0
+    exactVersion: 2.4.0
   # NOTE: as of mid-2026, MLXLLM/MLXLMCommon moved out of mlx-swift-examples
   # into their own package. See task-10-report.md for the full API-drift writeup.
   MLXSwiftLM:
@@ -17,10 +17,10 @@ packages:
     revision: feff32d610efd6b4b074121758b7c345344e6473
   SwiftHuggingFace:
     url: https://github.com/huggingface/swift-huggingface
-    from: 0.9.0
+    exactVersion: 0.9.0
   SwiftTransformers:
     url: https://github.com/huggingface/swift-transformers
-    from: 1.3.0
+    exactVersion: 1.3.3
 targets:
   Embromation:
     type: application

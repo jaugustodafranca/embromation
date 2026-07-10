@@ -27,4 +27,3 @@ models/
 
 # XcodeGen-generated project + build products
 Embromation.xcodeproj/
-.build/

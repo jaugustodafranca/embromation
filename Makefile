@@ -1,4 +1,6 @@
 # Makefile
+.PHONY: gen test build run
+
 DERIVED := .build/DerivedData
 APP := $(DERIVED)/Build/Products/Debug/Embromation.app
 

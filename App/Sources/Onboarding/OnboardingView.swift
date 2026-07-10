@@ -120,7 +120,7 @@ struct OnboardingView: View {
                 .multilineTextAlignment(.center).foregroundStyle(.secondary)
             if case .downloading(let fraction) = modelStore.state {
                 ProgressView(value: fraction)
-                Text("\(Int(fraction * 100))% of ~\(modelStore.selectedSpec.approxSizeGB, specifier: "%.1f") GB")
+                Text(String(format: L10n.t("onboarding.download_progress"), Int(fraction * 100), modelStore.selectedSpec.approxSizeGB))
                     .font(.caption).foregroundStyle(.secondary)
             }
             if modelStore.state == .ready {
