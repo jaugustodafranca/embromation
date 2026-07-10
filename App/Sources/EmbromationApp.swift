@@ -5,6 +5,7 @@ import TranslatorCore
 @main
 struct EmbromationApp: App {
     @StateObject private var state = AppState()
+    @Environment(\.scenePhase) private var scenePhase
 
     var body: some Scene {
         MenuBarExtra("Embromation", systemImage: "character.bubble") {
@@ -13,5 +14,6 @@ struct EmbromationApp: App {
             Button("Quit Embromation") { NSApp.terminate(nil) }
                 .keyboardShortcut("q")
         }
+        .onChange(of: scenePhase, initial: true) { _, _ in state.start() }
     }
 }
