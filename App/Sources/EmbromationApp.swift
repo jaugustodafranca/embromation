@@ -14,6 +14,7 @@ struct EmbromationApp: App {
             Button(L10n.t("menu.fix_grammar")) { state.coordinator.correctSelection() }
                 .keyboardShortcut("g", modifiers: [.control])
             Divider()
+            Button(L10n.t("menu.welcome_guide")) { openWindow(id: "onboarding") }
             SettingsLink { Text(L10n.t("menu.settings")) }
                 .keyboardShortcut(",")
             Divider()

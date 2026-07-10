@@ -1,6 +1,7 @@
 /* Menu bar */
 "menu.translate" = "Traduzir seleção";
 "menu.fix_grammar" = "Corrigir texto";
+"menu.welcome_guide" = "Guia de boas-vindas";
 "menu.settings" = "Ajustes…";
 "menu.quit" = "Sair do Embromation";
 
@@ -32,7 +33,7 @@
 "onboarding.download_progress" = "%d%% de ~%.1f GB";
 "onboarding.model_ready" = "Pronto";
 "onboarding.ready" = "Tudo pronto";
-"onboarding.hint" = "Selecione qualquer texto e aperte ⌥⌘T.";
+"onboarding.hint" = "Selecione qualquer texto e aperte ⌃T para traduzir — ou ⌃G para corrigir.";
 "onboarding.continue" = "Continuar";
 "onboarding.start" = "Começar a usar";
 
@@ -49,6 +50,13 @@
 "settings.add_term" = "Adicionar termo";
 "settings.add" = "Adicionar";
 "settings.shortcut" = "Atalho";
+"settings.translate_shortcut" = "Traduzir seleção";
+"settings.correction" = "Correção";
+"settings.fix_grammar" = "Corrigir texto";
+"settings.correction_flow" = "Depois de corrigir";
+"settings.correction_popup" = "Mostrar popup";
+"settings.correction_direct" = "Substituir direto";
+"settings.correction_hint" = "Substituir direto cola o texto corrigido por cima da seleção sem mostrar o popup. Erros sempre abrem o popup.";
 "settings.model" = "Modelo";
 "settings.download" = "Baixar modelo";
 "settings.downloading" = "Baixando…";

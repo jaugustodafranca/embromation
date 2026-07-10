@@ -1,6 +1,7 @@
 /* Menu bar */
 "menu.translate" = "Translate selection";
 "menu.fix_grammar" = "Fix grammar";
+"menu.welcome_guide" = "Welcome guide";
 "menu.settings" = "Settings…";
 "menu.quit" = "Quit Embromation";
 
@@ -32,7 +33,7 @@
 "onboarding.download_progress" = "%d%% of ~%.1f GB";
 "onboarding.model_ready" = "Ready";
 "onboarding.ready" = "All set";
-"onboarding.hint" = "Select any text and press ⌥⌘T.";
+"onboarding.hint" = "Select any text and press ⌃T to translate — or ⌃G to fix grammar.";
 "onboarding.continue" = "Continue";
 "onboarding.start" = "Start using";
 
@@ -49,6 +50,13 @@
 "settings.add_term" = "Add term";
 "settings.add" = "Add";
 "settings.shortcut" = "Shortcut";
+"settings.translate_shortcut" = "Translate selection";
+"settings.correction" = "Correction";
+"settings.fix_grammar" = "Fix grammar";
+"settings.correction_flow" = "After correcting";
+"settings.correction_popup" = "Show popup";
+"settings.correction_direct" = "Replace directly";
+"settings.correction_hint" = "Replace directly pastes the corrected text over your selection without showing the popup. Errors always open the popup.";
 "settings.model" = "Model";
 "settings.download" = "Download model";
 "settings.downloading" = "Downloading…";
