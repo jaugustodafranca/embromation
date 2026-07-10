@@ -8,7 +8,7 @@ Swift + SwiftUI, macOS 14+, **Apple Silicon only**. MIT licensed.
 
 ## Project status
 
-MVP implemented on branch `feat/mvp` (15 plan tasks complete). Manual GUI
+MVP implemented on branch `feat/first-version` (15 plan tasks complete). Manual GUI
 verification checklist pending — see
 `docs/superpowers/plans/2026-07-09-embromation-mvp.md` "Verification
 checklist".
