@@ -13,4 +13,13 @@ final class AppState: ObservableObject {
                                                   capture: SelectionCapture(),
                                                   translator: translator,
                                                   popup: popup)
+
+    private var hotkey: HotkeyController?
+
+    func start() {
+        guard hotkey == nil else { return } // idempotent: scenePhase fires repeatedly
+        hotkey = HotkeyController { [weak self] in
+            self?.coordinator.translateSelection()
+        }
+    }
 }
