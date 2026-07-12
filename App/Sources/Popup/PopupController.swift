@@ -40,7 +40,9 @@ final class PopupController {
             resizeSubscription = model.objectWillChange
                 .throttle(for: .milliseconds(80), scheduler: RunLoop.main, latest: true)
                 .sink { [weak self] _ in
-                    DispatchQueue.main.async {
+                    // Next main-actor turn, so SwiftUI has applied the change
+                    // before fittingSize is measured.
+                    Task { @MainActor in
                         self?.resizeToFit()
                         self?.syncShortcutsToPhase()
                     }
