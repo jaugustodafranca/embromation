@@ -7,6 +7,7 @@
 
 /* Popup */
 "popup.working" = "Traduzindo…";
+"popup.working_correction" = "Corrigindo…";
 "popup.no_selection" = "Nenhum texto selecionado. Selecione algo e aperte o atalho de novo. Se o app bloquear a captura, copie o texto com ⌘C e tente outra vez.";
 "popup.permission" = "A permissão de Acessibilidade é necessária para capturar o texto selecionado.";
 "popup.open_settings" = "Abrir Ajustes do Sistema…";
