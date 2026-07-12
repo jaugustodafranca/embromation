@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.0.0 (2026-07-10)
+## v1.0.0 (2026-07-12)
 
 First public release. 🇧🇷
 
