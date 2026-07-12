@@ -70,7 +70,9 @@ struct PopupView: View {
         case .working:
             HStack(spacing: 8) {
                 ProgressView().controlSize(.small)
-                Text(L10n.t("popup.working")).foregroundStyle(.secondary)
+                Text(L10n.t(model.isCorrection ? "popup.working_correction"
+                                               : "popup.working"))
+                    .foregroundStyle(.secondary)
             }
         case .noSelection:
             Text(L10n.t("popup.no_selection"))
