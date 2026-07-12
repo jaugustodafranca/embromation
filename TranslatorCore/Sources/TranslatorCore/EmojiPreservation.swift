@@ -12,10 +12,15 @@ public enum EmojiPreservation {
         return wanted.subtracting(produced)
     }
 
+    private static let combiningEnclosingKeycap: UInt32 = 0x20E3
+
     private static func isEmojiCluster(_ character: Character) -> Bool {
         character.unicodeScalars.contains { scalar in
             scalar.properties.isEmojiPresentation
                 || (scalar.properties.isEmoji && scalar.value > 0x238C)
+                // Keycaps (1️⃣ = digit + FE0F + 20E3) carry no scalar that
+                // passes the checks above.
+                || scalar.value == combiningEnclosingKeycap
         }
     }
 
@@ -32,6 +37,13 @@ public enum EmojiPreservation {
     /// missing-emoji check.
     public static func repair(input: String, output: String) -> String {
         var repaired = String(output.filter { !isLoneRegionalIndicator($0) })
+
+        // An empty completion must stay empty: appending the input's trailing
+        // emoji here would fabricate output and bypass the caller's
+        // empty-response guard.
+        guard !repaired.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            return repaired
+        }
 
         let trailingRun = trailingEmojiRun(of: input)
         guard !trailingRun.isEmpty else { return repaired }

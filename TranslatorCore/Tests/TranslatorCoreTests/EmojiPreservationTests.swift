@@ -64,4 +64,36 @@ extension EmojiPreservationTests {
         XCTAssertEqual(EmojiPreservation.missingEmoji(
             input: "Boa sorte 🤞 com o deploy.", output: repaired), ["🤞"])
     }
+
+    func testRepairKeepsEmptyOutputEmpty() {
+        // Appending the input's trailing emoji to an empty completion would
+        // fabricate output ("" -> " 🎉") and bypass the caller's
+        // empty-response guard — direct-replace would paste it over the
+        // user's real selection.
+        XCTAssertEqual(EmojiPreservation.repair(input: "Lançou! 🎉", output: ""), "")
+    }
+
+    func testRepairKeepsWhitespaceOnlyOutputEffectivelyEmpty() {
+        let repaired = EmojiPreservation.repair(input: "Lançou! 🎉", output: " \n")
+        XCTAssertTrue(repaired.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+    }
+
+    func testRepairCollapsesHalfFlagOnlyOutputToEmpty() {
+        XCTAssertEqual(EmojiPreservation.repair(input: "Feito. 🇧🇷", output: "🇧"), "")
+    }
+}
+
+extension EmojiPreservationTests {
+    func testDroppedKeycapEmojiIsDetected() {
+        // Keycaps (digit + U+FE0F + U+20E3) have no Emoji_Presentation scalar,
+        // so they slip past a presentation-only check.
+        let missing = EmojiPreservation.missingEmoji(
+            input: "Top 3: 1️⃣ 2️⃣ 3️⃣", output: "Top 3:")
+        XCTAssertEqual(missing, ["1️⃣", "2️⃣", "3️⃣"])
+    }
+
+    func testRepairAppendsDroppedTrailingKeycap() {
+        let repaired = EmojiPreservation.repair(input: "Passo 1️⃣", output: "Step")
+        XCTAssertEqual(repaired, "Step 1️⃣")
+    }
 }
