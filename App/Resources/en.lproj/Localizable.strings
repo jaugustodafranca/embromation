@@ -31,6 +31,7 @@
 "onboarding.granted" = "Granted";
 "onboarding.download_title" = "Downloading the model";
 "onboarding.download_body" = "%@ runs entirely on your Mac. One-time download.";
+"onboarding.model_suggested" = "Suggested for this Mac (%d GB of RAM).";
 "onboarding.downloading_size" = "Downloading about %.1f GB. The bar is shy, but the bytes are flowing.";
 "onboarding.cancel_download" = "Cancel download";
 "onboarding.model_ready" = "Ready";
@@ -63,6 +64,7 @@
 "settings.download" = "Download model";
 "settings.downloading" = "Downloading…";
 "settings.downloaded" = "Downloaded";
+"settings.model_ram_warning" = "Needs %d GB of RAM; this Mac has %d GB. Expect slowdowns.";
 "settings.unload_after" = "Unload from RAM after %d min idle";
 "settings.general" = "General";
 "settings.launch_at_login" = "Launch at login";

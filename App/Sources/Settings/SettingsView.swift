@@ -162,6 +162,9 @@ private struct ModelTab: View {
     @ObservedObject var settings: SettingsStore
     @ObservedObject var modelStore: ModelStore
 
+    private var selectedSpec: ModelSpec { ModelCatalog.spec(for: settings.data.selectedModelID) }
+    private var physicalMemoryGB: Int { Int(ModelCatalog.physicalMemoryGB) }
+
     var body: some View {
         Form {
             Section(L10n.t("settings.model")) {
@@ -172,6 +175,13 @@ private struct ModelTab: View {
                     }
                 }
                 .onChange(of: settings.data.selectedModelID) { modelStore.refresh() }
+
+                // Warning only — the selection itself is never blocked.
+                if selectedSpec.minRAMGB > physicalMemoryGB {
+                    Label(String(format: L10n.t("settings.model_ram_warning"), selectedSpec.minRAMGB, physicalMemoryGB),
+                          systemImage: "exclamationmark.triangle")
+                        .font(.caption).foregroundStyle(.orange)
+                }
 
                 switch modelStore.state {
                 case .ready:
