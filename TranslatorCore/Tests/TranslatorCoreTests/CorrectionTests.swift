@@ -47,6 +47,18 @@ final class CorrectionTests: XCTestCase {
         XCTAssertTrue(p.contains(Tone.formal.promptClause))
     }
 
+    func testCorrectionPromptListsConcreteErrorCategories() {
+        // Small on-device models are more likely to actually apply a fix
+        // when told exactly what to look for instead of a generic
+        // "fix grammar" instruction — regression test for that checklist.
+        let p = builder.correctionPrompt(language: .english, correctionTone: .keep,
+                                         customInstructions: "", glossary: [])
+        XCTAssertTrue(p.contains("capitalization"))
+        XCTAssertTrue(p.contains("subject-verb agreement"))
+        XCTAssertTrue(p.contains("punctuation"))
+        XCTAssertTrue(p.contains("even in short, casual, or technical messages"))
+    }
+
     func testTranslationPromptUnchangedRegression() {
         let p = builder.systemPrompt(source: .english, target: .portuguese,
                                      tone: .neutral, customInstructions: "", glossary: [])

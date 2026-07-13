@@ -21,6 +21,16 @@ packages:
   SwiftTransformers:
     url: https://github.com/huggingface/swift-transformers
     exactVersion: 1.3.3
+  # Pinned: swift-transformers only declares `from: "2.0.0"` for swift-jinja,
+  # so an unconstrained resolve picks up whatever is newest. swift-jinja
+  # 2.4.0 (released 2026-07-13, the same day as this pin — hours before it)
+  # renamed Jinja.Value.object's key type from String to a new ObjectKey
+  # type, breaking Config.swift's `.init(uniqueKeysWithValues:)` call source
+  # — a clean/cold build fails every time. Pinned to 2.3.6, the version
+  # current when swift-transformers 1.3.3 shipped (both released 2026-05-16).
+  SwiftJinja:
+    url: https://github.com/huggingface/swift-jinja.git
+    exactVersion: 2.3.6
 targets:
   Embromation:
     type: application
