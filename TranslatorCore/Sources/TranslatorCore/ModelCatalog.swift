@@ -1,3 +1,5 @@
+import Foundation
+
 public struct ModelSpec: Equatable, Identifiable, Sendable {
     /// Hugging Face repo id, e.g. "mlx-community/Qwen3-4B-4bit".
     public let id: String
@@ -30,5 +32,21 @@ public enum ModelCatalog {
     /// default — this is what migrates users off a retired model automatically.
     public static func spec(for id: String) -> ModelSpec {
         all.first { $0.id == id } ?? `default`
+    }
+
+    /// This machine's RAM in whole GB (binary gibibytes, matching how Apple
+    /// markets Mac memory sizes), rounded so borderline hardware readings
+    /// don't shift threshold comparisons below.
+    public static var physicalMemoryGB: Double {
+        (Double(ProcessInfo.processInfo.physicalMemory) / 1_073_741_824).rounded()
+    }
+
+    /// Sizes a model recommendation to available RAM. Pure and directly
+    /// testable via the explicit parameter; omit it in production code to
+    /// use this machine's real RAM.
+    public static func recommended(forPhysicalMemoryGB gb: Double = ModelCatalog.physicalMemoryGB) -> ModelSpec {
+        if gb >= 16 { return qwen3_4b }
+        if gb >= 8 { return llama32_3b }
+        return qwen25_1_5b
     }
 }

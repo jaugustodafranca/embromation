@@ -7,12 +7,18 @@ public struct SettingsData: Codable, Equatable, Sendable {
     public var customInstructions = ""
     public var correctionInstructions = ""
     public var glossary: [String] = []
-    public var selectedModelID = ModelCatalog.default.id
+    public var selectedModelID = ModelCatalog.recommended().id
     public var unloadAfterMinutes = 10
     public var didOnboard = false
     public var correctionReplacesDirectly = false
 
     public init() {}
+
+    /// Test seam: pins the fresh-install model recommendation to an explicit
+    /// RAM size instead of this host's actual memory.
+    public init(physicalMemoryGB: Double) {
+        selectedModelID = ModelCatalog.recommended(forPhysicalMemoryGB: physicalMemoryGB).id
+    }
 
     private enum CodingKeys: String, CodingKey {
         case pair, tone, customInstructions, correctionInstructions, glossary,

@@ -9,9 +9,19 @@ final class SettingsStoreTests: XCTestCase {
         XCTAssertEqual(store.data.pair, LanguagePair(primary: .portuguese, secondary: .english))
         XCTAssertEqual(store.data.tone, .neutral)
         XCTAssertEqual(store.data.glossary, [])
-        XCTAssertEqual(store.data.selectedModelID, ModelCatalog.default.id)
+        // RAM-aware default: whatever this host reports, a fresh store must
+        // match the pure recommendation function, not a fixed model.
+        XCTAssertEqual(store.data.selectedModelID, ModelCatalog.recommended().id)
         XCTAssertEqual(store.data.unloadAfterMinutes, 10)
         XCTAssertFalse(store.data.didOnboard)
+    }
+
+    /// Proves the fresh-install default is wired to the RAM-aware
+    /// recommendation, independent of the actual host machine's memory.
+    func testFreshSettingsDataOn8GBMachineDefaultsToModelItCanRun() {
+        let fresh = SettingsData(physicalMemoryGB: 8)
+        let spec = ModelCatalog.spec(for: fresh.selectedModelID)
+        XCTAssertLessThanOrEqual(spec.minRAMGB, 8)
     }
 
     @MainActor
