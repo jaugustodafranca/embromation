@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.0.1 (2026-07-12)
+
+### Fixed
+- Regenerate with feedback could answer with the refinement instruction
+  itself instead of the rewritten text — worst in fix-grammar mode, where the
+  proofreading contract made the model "correct" the instruction. Refinements
+  now use a dedicated rewrite prompt that carries the original text, the
+  previous version and the feedback as data.
+
 ## v1.0.0 (2026-07-12)
 
 First public release. 🇧🇷
