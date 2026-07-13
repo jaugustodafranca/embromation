@@ -61,16 +61,22 @@ actor MLXTranslator: StreamingTranslator {
             // answer, and cutting the tail of the sampling distribution
             // makes the model less likely to leave a caught error unedited.
             let temperature: Float
-            var topP: Float = 1.0
+            let topP: Float
             if request.refinement != nil {
-                temperature = 0.7
+                (temperature, topP) = (0.7, 1.0)
             } else if request.mode == .correct {
-                temperature = 0.2
-                topP = 0.9
+                (temperature, topP) = (0.2, 0.9)
             } else {
-                temperature = 0.3
+                (temperature, topP) = (0.3, 1.0)
             }
-            let parameters = GenerateParameters(maxTokens: 2048, temperature: temperature, topP: topP)
+            // Thinking spends part of the budget on the reasoning trace
+            // before the answer even starts — 2048 was sized for a direct
+            // answer only. Without headroom, a long paste-correction could
+            // exhaust the budget mid-<think>, and ThinkBlockFilter withholds
+            // everything until </think> closes — the user would see an
+            // empty result instead of a slow-but-correct one.
+            let maxTokens = enableThinking ? 4096 : 2048
+            let parameters = GenerateParameters(maxTokens: maxTokens, temperature: temperature, topP: topP)
             let stream = try MLXLMCommon.generate(input: input, parameters: parameters, context: context)
             var filter = ThinkBlockFilter()
             for await generation in stream {
