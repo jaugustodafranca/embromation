@@ -34,30 +34,17 @@ actor MLXTranslator: StreamingTranslator {
     private func run(_ request: TranslationRequest,
                      yield: @escaping @Sendable (String) -> Void) async throws {
         let container = try await loadedContainer()
-        let builder = PromptBuilder()
-        let system: String
-        switch request.mode {
-        case .translate:
-            system = builder.systemPrompt(source: request.source,
-                                          target: request.target,
-                                          tone: request.tone,
-                                          customInstructions: request.customInstructions,
-                                          glossary: request.glossary)
-        case .correct:
-            system = builder.correctionPrompt(language: request.source,
-                                              tone: request.tone,
-                                              customInstructions: request.customInstructions,
-                                              glossary: request.glossary)
-        }
+        let messages = PromptBuilder().messages(for: request)
         try await container.perform { (context: ModelContext) in
             // enable_thinking=false: reasoning models (Qwen3) must answer
             // directly — chain-of-thought would eat the token budget and the
             // user's time. The filter below strips the empty <think/> pair
             // the template still emits.
-            var chat: [Chat.Message] = [.system(system), .user(request.text)]
-            if let refinement = request.refinement {
-                chat.append(.assistant(refinement.previousOutput))
-                chat.append(.user("The previous version was not good enough. Feedback: \(refinement.feedback). Rewrite it applying the feedback. Reply with ONLY the new text, in the same language as before."))
+            let chat: [Chat.Message] = messages.map { message in
+                switch message.role {
+                case .system: .system(message.content)
+                case .user: .user(message.content)
+                }
             }
             let input = try await context.processor.prepare(
                 input: UserInput(chat: chat, additionalContext: ["enable_thinking": false]))
