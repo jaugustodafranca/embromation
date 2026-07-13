@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.2.0 (2026-07-13)
+
+### Improved
+- Fix grammar corrects more reliably: the model now checks a concrete list
+  of error categories (capitalization, subject-verb agreement, punctuation,
+  spelling) instead of a generic instruction, and reasons through the fix
+  before answering rather than judging casual or technical text "good
+  enough" on a skim.
+
 ## v1.1.0 (2026-07-12)
 
 ### Features
