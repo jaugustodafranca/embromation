@@ -140,7 +140,8 @@ final class TranslationCoordinator {
                                          tone: settings.data.tone,
                                          customInstructions: instructions,
                                          glossary: settings.data.glossary,
-                                         mode: mode)
+                                         mode: mode,
+                                         correctionTone: settings.data.correctionTone)
         if direct {
             await directCorrect(request)
         } else {
