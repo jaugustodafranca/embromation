@@ -54,6 +54,11 @@ public struct PromptBuilder: Sendable {
             ? "keeping the same language (\(language.englishName)), meaning and tone."
             : "keeping the same language (\(language.englishName)) and meaning."
         lines.append("You are a proofreading engine. Fix grammar, spelling and punctuation of the user's message, \(commitment)")
+        // A generic "fix grammar" instruction is too easy for a small model to
+        // satisfy by changing nothing — spelling out the concrete categories
+        // makes it check specific things instead of judging the message
+        // "good enough" on a skim.
+        lines.append("Fix every instance of: incorrect capitalization (sentence starts, proper nouns, acronyms like API), subject-verb agreement, missing or wrong punctuation, and misspelled words — even in short, casual, or technical messages.")
         lines.append("Preserve emoji, keyboard shortcuts (like ⌃T), code, URLs, numbers and any other symbols exactly as written — never drop or translate them.")
         if let clause = correctionTone.promptClause {
             lines.append(clause)
