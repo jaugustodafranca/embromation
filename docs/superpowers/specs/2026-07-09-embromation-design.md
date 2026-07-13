@@ -4,10 +4,11 @@
 **Status:** Aguardando revisão do autor
 **Protótipo interativo:** https://claude.ai/code/artifact/46ddca1b-5bcd-4fa2-80d9-39f8b7dabb9a
 
-> **Embromation** (*embromar* + *-ation*): a arte brasileira de fingir que fala
-> inglês. O app existe para acabar com ela. Tagline: "Chega de embromation."
-> Abertura do README em inglês: *"Embromation (n.): the ancient Brazilian art of
-> pretending you speak English. This app ends it."*
+> **Embromation** (*embromar* + *-ation*): a arte de enrolar no inglês. O app
+> existe para acabar com ela. Tagline: "Chega de embromation."
+> Abertura do README em inglês: *"Embromation (n.): from the Brazilian
+> Portuguese embromar — the fine art of winging it in English. This app ends
+> it."*
 >
 > Este documento está em português para facilitar a revisão; será traduzido para
 > inglês quando o repositório for tornado público.

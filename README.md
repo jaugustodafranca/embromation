@@ -2,8 +2,8 @@
 
 # Embromation
 
-> **Embromation** (n.): *the ancient Brazilian art of pretending you speak
-> English. This app ends it.*
+> **Embromation** (n.): *from the Brazilian Portuguese* embromar *— the fine
+> art of winging it in English. This app ends it.*
 
 Instant, private, on-device translation for macOS. Select text in any app,
 hit a hotkey and watch the translation stream in. No cloud, no API keys,
