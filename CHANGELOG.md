@@ -1,5 +1,20 @@
 # Changelog
 
+## v1.1.0 (2026-07-12)
+
+### Features
+- RAM-aware default model: a fresh install now suggests the model that fits
+  this Mac's memory (16 GB+ gets Qwen 3 4B, 8 GB gets Llama 3.2 3B, below
+  that the light Qwen 2.5 1.5B) — and the onboarding says so.
+- Settings warns when the selected model needs more RAM than this Mac has.
+  Informational only: the choice is never blocked.
+- Correction has its own tone setting, defaulting to "Keep original tone".
+  Translation keeps its separate tone control.
+
+### Fixed
+- Correction prompts no longer promise to keep the tone while forcing another
+  one — the contradiction is gone from both the main and refinement prompts.
+
 ## v1.0.1 (2026-07-12)
 
 ### Fixed
