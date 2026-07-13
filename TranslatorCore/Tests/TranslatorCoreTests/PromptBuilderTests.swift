@@ -51,11 +51,13 @@ final class PromptBuilderTests: XCTestCase {
 
 extension PromptBuilderTests {
     private func request(mode: TranslationMode,
-                         refinement: Refinement? = nil) -> TranslationRequest {
+                         refinement: Refinement? = nil,
+                         correctionTone: CorrectionTone = .keep) -> TranslationRequest {
         TranslationRequest(text: "Hey team, the deploy is done.",
                            source: .english, target: .portuguese,
                            tone: .formal, customInstructions: "Keep tech terms.",
-                           glossary: ["deploy"], mode: mode, refinement: refinement)
+                           glossary: ["deploy"], mode: mode, refinement: refinement,
+                           correctionTone: correctionTone)
     }
 
     func testMessagesWithoutRefinementSendTheRawTextAsTheUserTurn() {
@@ -114,8 +116,27 @@ extension PromptBuilderTests {
                                                        customInstructions: "Keep tech terms.",
                                                        glossary: ["deploy"]))
         let correct = builder.messages(for: request(mode: .correct))[0].content
-        XCTAssertEqual(correct, builder.correctionPrompt(language: .english, tone: .formal,
+        XCTAssertEqual(correct, builder.correctionPrompt(language: .english, correctionTone: .keep,
                                                          customInstructions: "Keep tech terms.",
                                                          glossary: ["deploy"]))
+    }
+
+    func testCorrectionRefinementKeepAddsNoToneClause() {
+        let refinement = Refinement(previousOutput: "prev", feedback: "more formal")
+        let system = builder.messages(for: request(mode: .correct, refinement: refinement,
+                                                    correctionTone: .keep))[0].content
+        XCTAssertFalse(system.contains(Tone.formal.promptClause))
+        XCTAssertFalse(system.contains(Tone.neutral.promptClause))
+        XCTAssertFalse(system.contains(Tone.casual.promptClause))
+    }
+
+    func testCorrectionRefinementNonKeepUsesCorrectionToneNotTranslationTone() {
+        let refinement = Refinement(previousOutput: "prev", feedback: "more formal")
+        // The shared helper's translation `tone` is .formal; correctionTone here
+        // is .casual — only the latter may surface in a .correct refinement.
+        let system = builder.messages(for: request(mode: .correct, refinement: refinement,
+                                                    correctionTone: .casual))[0].content
+        XCTAssertTrue(system.contains(Tone.casual.promptClause))
+        XCTAssertFalse(system.contains(Tone.formal.promptClause))
     }
 }

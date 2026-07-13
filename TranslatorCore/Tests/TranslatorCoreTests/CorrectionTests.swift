@@ -12,7 +12,7 @@ final class CorrectionTests: XCTestCase {
     }
 
     func testCorrectionPromptKeepsSameLanguageAndDemandsCorrectedTextOnly() {
-        let p = builder.correctionPrompt(language: .portuguese, tone: .neutral,
+        let p = builder.correctionPrompt(language: .portuguese, correctionTone: .keep,
                                          customInstructions: "", glossary: [])
         XCTAssertTrue(p.contains("proofreading"))
         XCTAssertTrue(p.contains("same language"))
@@ -22,12 +22,29 @@ final class CorrectionTests: XCTestCase {
     }
 
     func testCorrectionPromptCarriesToneCustomAndGlossary() {
-        let p = builder.correctionPrompt(language: .english, tone: .casual,
+        let p = builder.correctionPrompt(language: .english, correctionTone: .casual,
                                          customInstructions: "Keep it short.",
                                          glossary: ["deploy"])
         XCTAssertTrue(p.contains(Tone.casual.promptClause))
         XCTAssertTrue(p.contains("Keep it short."))
         XCTAssertTrue(p.contains("deploy"))
+    }
+
+    func testCorrectionPromptKeepPreservesOriginalToneAndAddsNoClause() {
+        let p = builder.correctionPrompt(language: .english, correctionTone: .keep,
+                                         customInstructions: "", glossary: [])
+        XCTAssertTrue(p.contains("keeping the same language (English), meaning and tone."))
+        XCTAssertFalse(p.contains(Tone.neutral.promptClause))
+        XCTAssertFalse(p.contains(Tone.formal.promptClause))
+        XCTAssertFalse(p.contains(Tone.casual.promptClause))
+    }
+
+    func testCorrectionPromptNonKeepDropsToneWordFromLineAndAppendsMatchingClause() {
+        let p = builder.correctionPrompt(language: .english, correctionTone: .formal,
+                                         customInstructions: "", glossary: [])
+        XCTAssertTrue(p.contains("keeping the same language (English) and meaning."))
+        XCTAssertFalse(p.contains("meaning and tone."))
+        XCTAssertTrue(p.contains(Tone.formal.promptClause))
     }
 
     func testTranslationPromptUnchangedRegression() {

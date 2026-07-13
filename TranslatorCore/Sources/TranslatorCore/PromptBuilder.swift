@@ -42,14 +42,22 @@ public struct PromptBuilder: Sendable {
 
     public func correctionPrompt(
         language: Language,
-        tone: Tone,
+        correctionTone: CorrectionTone,
         customInstructions: String,
         glossary: [String]
     ) -> String {
         var lines: [String] = []
-        lines.append("You are a proofreading engine. Fix grammar, spelling and punctuation of the user's message, keeping the same language (\(language.englishName)), meaning and tone.")
+        // .keep promises to preserve the input's tone, so no clause is forced;
+        // any other value drops that promise from the sentence instead of
+        // stating it and then contradicting it with a forced tone below.
+        let commitment = correctionTone == .keep
+            ? "keeping the same language (\(language.englishName)), meaning and tone."
+            : "keeping the same language (\(language.englishName)) and meaning."
+        lines.append("You are a proofreading engine. Fix grammar, spelling and punctuation of the user's message, \(commitment)")
         lines.append("Preserve emoji, keyboard shortcuts (like ⌃T), code, URLs, numbers and any other symbols exactly as written — never drop or translate them.")
-        lines.append(tone.promptClause)
+        if let clause = correctionTone.promptClause {
+            lines.append(clause)
+        }
         let custom = customInstructions.trimmingCharacters(in: .whitespacesAndNewlines)
         if !custom.isEmpty {
             lines.append(custom)
@@ -76,7 +84,7 @@ public struct PromptBuilder: Sendable {
                                       customInstructions: request.customInstructions,
                                       glossary: request.glossary)
             case .correct:
-                system = correctionPrompt(language: request.source, tone: request.tone,
+                system = correctionPrompt(language: request.source, correctionTone: request.correctionTone,
                                           customInstructions: request.customInstructions,
                                           glossary: request.glossary)
             }
@@ -103,7 +111,16 @@ public struct PromptBuilder: Sendable {
             lines.append("You are a proofreading engine. The user received the previous version as a corrected form of the original text and asked for changes. Write a new version of the original text — same language (\(request.source.englishName)), same meaning — that fixes grammar, spelling and punctuation and applies the user's feedback.")
         }
         lines.append("Preserve emoji, keyboard shortcuts (like ⌃T), code, URLs, numbers and any other symbols exactly as written — never drop or translate them.")
-        lines.append(request.tone.promptClause)
+        switch request.mode {
+        case .translate:
+            lines.append(request.tone.promptClause)
+        case .correct:
+            // Correction has its own tone, decoupled from the translation
+            // tone above — .keep forces nothing (see correctionPrompt).
+            if let clause = request.correctionTone.promptClause {
+                lines.append(clause)
+            }
+        }
         let custom = request.customInstructions.trimmingCharacters(in: .whitespacesAndNewlines)
         if !custom.isEmpty {
             lines.append(custom)
