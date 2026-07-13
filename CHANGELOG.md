@@ -14,6 +14,9 @@ First public release. 🇧🇷
   popup. It lives only in that popup session and nothing is stored or sent anywhere.
 - Configurable correction flow: review in the popup or replace your selection
   directly.
+- Correction keeps its own extra instructions, separate from translation's.
+- Emoji guard: a direct replacement that would drop or mangle an emoji is
+  diverted to the popup for review instead of pasted silently.
 - Tone control (neutral/formal/casual), free-form instructions, and a
   glossary of terms that must never be translated.
 - Popup shortcuts: ⌘C copies, ⌘⏎ replaces. Esc closes.
