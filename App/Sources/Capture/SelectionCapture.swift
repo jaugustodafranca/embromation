@@ -35,24 +35,26 @@ struct SelectionCapture: SelectionCapturing {
 
     /// Fallback: simulate ⌘C, poll the pasteboard changeCount, restore the clipboard.
     private func copyBasedCapture() async -> String? {
-        let pasteboard = NSPasteboard.general
-        let snapshot = pasteboard.snapshotItems()
-        let startCount = pasteboard.changeCount
+        await PasteboardQueue.shared.run {
+            let pasteboard = NSPasteboard.general
+            let snapshot = pasteboard.snapshotItems()
+            let startCount = pasteboard.changeCount
 
-        Keystroke.postCommand(Keystroke.c)
+            Keystroke.postCommand(Keystroke.c)
 
-        var changed = false
-        for _ in 0..<Self.maxPollAttempts {
-            try? await Task.sleep(for: Self.pollInterval)
-            if pasteboard.changeCount != startCount {
-                changed = true
-                break
+            var changed = false
+            for _ in 0..<Self.maxPollAttempts {
+                try? await Task.sleep(for: Self.pollInterval)
+                if pasteboard.changeCount != startCount {
+                    changed = true
+                    break
+                }
             }
-        }
-        guard changed else { return nil }
-        let captured = pasteboard.string(forType: .string)
+            guard changed else { return nil }
+            let captured = pasteboard.string(forType: .string)
 
-        pasteboard.restore(from: snapshot)
-        return captured
+            pasteboard.restore(from: snapshot)
+            return captured
+        }
     }
 }
