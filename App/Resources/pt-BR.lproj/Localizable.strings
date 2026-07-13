@@ -60,6 +60,7 @@
 "settings.correction_popup" = "Mostrar popup";
 "settings.correction_direct" = "Substituir direto";
 "settings.correction_hint" = "Substituir direto cola o texto corrigido por cima da seleção sem mostrar o popup. Erros sempre abrem o popup.";
+"settings.correction_tone" = "Tom";
 "settings.model" = "Modelo";
 "settings.download" = "Baixar modelo";
 "settings.downloading" = "Baixando…";
@@ -73,6 +74,7 @@
 "settings.tab_correction" = "Correção";
 "settings.tab_glossary" = "Glossário";
 "settings.tab_model" = "Modelo";
+"settings.tone_keep" = "Manter o tom original";
 "settings.tone_neutral" = "Neutro";
 "settings.tone_formal" = "Formal";
 "settings.tone_casual" = "Casual";

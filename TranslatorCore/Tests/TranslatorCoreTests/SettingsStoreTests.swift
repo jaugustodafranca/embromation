@@ -14,6 +14,7 @@ final class SettingsStoreTests: XCTestCase {
         XCTAssertEqual(store.data.selectedModelID, ModelCatalog.recommended().id)
         XCTAssertEqual(store.data.unloadAfterMinutes, 10)
         XCTAssertFalse(store.data.didOnboard)
+        XCTAssertEqual(store.data.correctionTone, .keep)
     }
 
     /// Proves the fresh-install default is wired to the RAM-aware
@@ -59,6 +60,19 @@ final class SettingsStoreTests: XCTestCase {
         XCTAssertTrue(decoded.didOnboard)
         XCTAssertFalse(decoded.correctionReplacesDirectly)
         XCTAssertEqual(decoded.correctionInstructions, "")
+    }
+
+    func testDecodingBlobWithoutCorrectionToneDefaultsToKeep() throws {
+        // Blob shape persisted before this feature (no correctionTone key), but
+        // otherwise up to date — includes correctionReplacesDirectly.
+        let old = """
+        {"pair":{"primary":{"code":"pt","englishName":"Brazilian Portuguese"},"secondary":{"code":"en","englishName":"English"}},"tone":"formal","customInstructions":"tech","correctionInstructions":"","glossary":["deploy"],"selectedModelID":"mlx-community/Qwen3-4B-4bit","unloadAfterMinutes":5,"didOnboard":true,"correctionReplacesDirectly":true}
+        """
+        let decoded = try JSONDecoder().decode(SettingsData.self, from: Data(old.utf8))
+        XCTAssertEqual(decoded.correctionTone, .keep)
+        // Sibling fields from the previous migration still decode correctly.
+        XCTAssertEqual(decoded.tone, .formal)
+        XCTAssertTrue(decoded.correctionReplacesDirectly)
     }
 
     @MainActor

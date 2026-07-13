@@ -24,10 +24,13 @@ public struct TranslationRequest: Equatable, Sendable {
     public var glossary: [String]
     public var mode: TranslationMode
     public var refinement: Refinement?
+    /// Tone for `.correct` requests only; `.translate` requests use `tone`.
+    public var correctionTone: CorrectionTone
 
     public init(text: String, source: Language, target: Language,
                 tone: Tone, customInstructions: String, glossary: [String],
-                mode: TranslationMode = .translate, refinement: Refinement? = nil) {
+                mode: TranslationMode = .translate, refinement: Refinement? = nil,
+                correctionTone: CorrectionTone = .keep) {
         self.text = text
         self.source = source
         self.target = target
@@ -36,6 +39,7 @@ public struct TranslationRequest: Equatable, Sendable {
         self.glossary = glossary
         self.mode = mode
         self.refinement = refinement
+        self.correctionTone = correctionTone
     }
 }
 

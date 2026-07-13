@@ -11,6 +11,7 @@ public struct SettingsData: Codable, Equatable, Sendable {
     public var unloadAfterMinutes = 10
     public var didOnboard = false
     public var correctionReplacesDirectly = false
+    public var correctionTone: CorrectionTone = .keep
 
     public init() {}
 
@@ -23,7 +24,7 @@ public struct SettingsData: Codable, Equatable, Sendable {
     private enum CodingKeys: String, CodingKey {
         case pair, tone, customInstructions, correctionInstructions, glossary,
              selectedModelID, unloadAfterMinutes, didOnboard,
-             correctionReplacesDirectly
+             correctionReplacesDirectly, correctionTone
     }
 
     /// Tolerant decoding: any missing key falls back to its default so adding
@@ -40,6 +41,7 @@ public struct SettingsData: Codable, Equatable, Sendable {
         unloadAfterMinutes = try c.decodeIfPresent(Int.self, forKey: .unloadAfterMinutes) ?? defaults.unloadAfterMinutes
         didOnboard = try c.decodeIfPresent(Bool.self, forKey: .didOnboard) ?? defaults.didOnboard
         correctionReplacesDirectly = try c.decodeIfPresent(Bool.self, forKey: .correctionReplacesDirectly) ?? defaults.correctionReplacesDirectly
+        correctionTone = try c.decodeIfPresent(CorrectionTone.self, forKey: .correctionTone) ?? defaults.correctionTone
     }
 }
 

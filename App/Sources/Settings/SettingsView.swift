@@ -107,6 +107,14 @@ private struct CorrectionTab: View {
                 Text(L10n.t("settings.correction_hint"))
                     .font(.caption).foregroundStyle(.secondary)
             }
+            Section {
+                Picker(L10n.t("settings.correction_tone"), selection: $settings.data.correctionTone) {
+                    ForEach(CorrectionTone.allCases, id: \.self) { tone in
+                        Text(L10n.t("settings.tone_\(tone.rawValue)")).tag(tone)
+                    }
+                }
+                .pickerStyle(.segmented)
+            }
             Section(L10n.t("settings.extra_instructions")) {
                 TextField("", text: $settings.data.correctionInstructions,
                           prompt: Text(L10n.t("settings.correction_instructions_placeholder")),
