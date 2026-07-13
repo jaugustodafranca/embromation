@@ -31,6 +31,7 @@
 "onboarding.granted" = "Concedida";
 "onboarding.download_title" = "Baixando o modelo";
 "onboarding.download_body" = "%@ roda totalmente no seu Mac. Download único.";
+"onboarding.model_suggested" = "Sugerido para este Mac (%d GB de RAM).";
 "onboarding.downloading_size" = "Baixando uns %.1f GB. A barra é tímida, mas os bytes estão fluindo.";
 "onboarding.cancel_download" = "Cancelar download";
 "onboarding.model_ready" = "Pronto";
@@ -63,6 +64,7 @@
 "settings.download" = "Baixar modelo";
 "settings.downloading" = "Baixando…";
 "settings.downloaded" = "Baixado";
+"settings.model_ram_warning" = "Precisa de %d GB de RAM; este Mac tem %d GB. Pode ficar lento.";
 "settings.unload_after" = "Descarregar da RAM após %d min de inatividade";
 "settings.general" = "Geral";
 "settings.launch_at_login" = "Iniciar no login";

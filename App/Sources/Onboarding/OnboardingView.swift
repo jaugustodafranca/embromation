@@ -127,6 +127,9 @@ struct OnboardingView: View {
             Text(L10n.t("onboarding.download_title")).font(.title3.bold())
             Text(String(format: L10n.t("onboarding.download_body"), modelStore.selectedSpec.displayName))
                 .multilineTextAlignment(.center).foregroundStyle(.secondary)
+            Text(String(format: L10n.t("onboarding.model_suggested"), Int(ModelCatalog.physicalMemoryGB)))
+                .font(.caption).foregroundStyle(.tertiary)
+                .multilineTextAlignment(.center)
             if case .downloading = modelStore.state {
                 ProgressView()
                 Text(String(format: L10n.t("onboarding.downloading_size"), modelStore.selectedSpec.approxSizeGB))
