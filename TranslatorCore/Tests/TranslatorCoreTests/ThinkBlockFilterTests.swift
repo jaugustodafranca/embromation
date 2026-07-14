@@ -31,4 +31,19 @@ final class ThinkBlockFilterTests: XCTestCase {
     func testShortAnswerNotMistakenForThinkPrefix() {
         XCTAssertEqual(run(["<", "3 amor"]), "<3 amor")
     }
+
+    func testLeadingWhitespaceAfterThinkBlockIsDroppedAcrossChunks() {
+        // Regression: when </think> closes in one chunk and the blank line +
+        // answer arrive in the NEXT chunk (routine with real reasoning
+        // content, since the model emits them as separate generation
+        // steps), the filter must keep trimming — not just on the chunk
+        // where </think> itself was found.
+        XCTAssertEqual(run(["<think>reasoning</think>", "\n\nThe problem is..."]),
+                       "The problem is...")
+    }
+
+    func testLeadingWhitespaceSplitAcrossManyChunksIsDropped() {
+        XCTAssertEqual(run(["<think>x</think>", "\n", "\n", " ", "Hello"]),
+                       "Hello")
+    }
 }

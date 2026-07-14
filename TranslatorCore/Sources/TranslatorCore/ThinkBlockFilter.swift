@@ -3,7 +3,11 @@
 /// with thinking disabled they still produce an empty pair — and reasoning
 /// tokens must never reach the user.
 public struct ThinkBlockFilter: Sendable {
-    private enum State { case buffering, passing }
+    // `trimming`: `</think>` has closed but no non-whitespace answer text
+    // has been seen yet — the blank line(s) before the answer can arrive in
+    // a later chunk than the closing tag itself, so trimming can't stop the
+    // moment `</think>` is found.
+    private enum State { case buffering, trimming, passing }
     private var state: State = .buffering
     private var buffer = ""
 
@@ -14,15 +18,28 @@ public struct ThinkBlockFilter: Sendable {
         if state == .passing { return chunk }
 
         buffer += chunk
+
+        if state == .trimming {
+            let content = buffer.drop(while: \.isWhitespace)
+            guard !content.isEmpty else { return nil }
+            state = .passing
+            buffer = ""
+            return String(content)
+        }
+
         let content = buffer.drop(while: \.isWhitespace)
         guard !content.isEmpty else { return nil }
 
         if content.hasPrefix("<think>") {
             guard let close = content.range(of: "</think>") else { return nil }
-            state = .passing
             let answer = content[close.upperBound...].drop(while: \.isWhitespace)
             buffer = ""
-            return answer.isEmpty ? nil : String(answer)
+            guard !answer.isEmpty else {
+                state = .trimming
+                return nil
+            }
+            state = .passing
+            return String(answer)
         }
 
         // Could this still become "<think>" once more chunks arrive?
