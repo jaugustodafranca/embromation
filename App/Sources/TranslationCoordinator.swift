@@ -7,17 +7,19 @@ final class TranslationCoordinator {
     private let capture: SelectionCapturing
     private let translator: StreamingTranslator
     private let popup: PopupController
+    private let modelStore: ModelStore
     private var currentTask: Task<Void, Never>?
     private var lastCapturedText = ""
     private var lastRequest: TranslationRequest?
     private var pendingClipboardChangeCount: Int?
 
     init(settings: SettingsStore, capture: SelectionCapturing,
-         translator: StreamingTranslator, popup: PopupController) {
+         translator: StreamingTranslator, popup: PopupController, modelStore: ModelStore) {
         self.settings = settings
         self.capture = capture
         self.translator = translator
         self.popup = popup
+        self.modelStore = modelStore
         popup.onDismiss = { [weak self] in self?.currentTask?.cancel() }
         popup.model.onRetarget = { [weak self] lang in self?.retarget(lang) }
         popup.model.onRetry = { [weak self] in
@@ -99,6 +101,14 @@ final class TranslationCoordinator {
 
         guard AXIsProcessTrusted() else {
             popup.model.phase = .permissionNeeded
+            popup.show()
+            return
+        }
+        // Without this, translate() falls through to MLXTranslator's
+        // loadContainer(), which silently starts the multi-GB download with
+        // no progress reported to the popup — the spinner just runs forever.
+        guard modelStore.state == .ready else {
+            popup.model.phase = .modelNotReady
             popup.show()
             return
         }

@@ -40,6 +40,7 @@ struct EmbromationApp: App {
             appDelegate.onReopen = {
                 if state.needsOnboarding { showOnboarding() } else { showSettings() }
             }
+            state.popup.model.onOpenSettings = { showSettings() }
             if state.needsOnboarding { showOnboarding() }
         }
 

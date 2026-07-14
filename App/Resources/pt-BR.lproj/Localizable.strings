@@ -11,6 +11,8 @@
 "popup.no_selection" = "Nenhum texto selecionado. Selecione algo e aperte o atalho de novo. Se o app bloquear a captura, copie o texto com ⌘C e tente outra vez.";
 "popup.permission" = "A permissão de Acessibilidade é necessária para capturar o texto selecionado.";
 "popup.open_settings" = "Abrir Ajustes do Sistema…";
+"popup.model_not_ready" = "O modelo ainda não foi baixado. Abra os Ajustes para baixá-lo.";
+"popup.open_app_settings" = "Abrir Ajustes…";
 "popup.copy" = "Copiar";
 "popup.replace" = "Substituir";
 "popup.retry" = "Tentar de novo";
@@ -32,7 +34,7 @@
 "onboarding.download_title" = "Baixando o modelo";
 "onboarding.download_body" = "%@ roda totalmente no seu Mac. Download único.";
 "onboarding.model_suggested" = "Sugerido para este Mac (%d GB de RAM).";
-"onboarding.downloading_size" = "Baixando uns %.1f GB. A barra é tímida, mas os bytes estão fluindo.";
+"onboarding.downloading_size" = "%.0f%% de uns %.1f GB.";
 "onboarding.cancel_download" = "Cancelar download";
 "onboarding.model_ready" = "Pronto";
 "onboarding.ready" = "Tudo pronto";
@@ -63,7 +65,7 @@
 "settings.correction_tone" = "Tom";
 "settings.model" = "Modelo";
 "settings.download" = "Baixar modelo";
-"settings.downloading" = "Baixando…";
+"settings.downloading" = "Baixando… %.0f%%";
 "settings.downloaded" = "Baixado";
 "settings.model_ram_warning" = "Precisa de %d GB de RAM; este Mac tem %d GB. Pode ficar lento.";
 "settings.unload_after" = "Descarregar da RAM após %d min de inatividade";
