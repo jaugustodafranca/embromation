@@ -85,6 +85,11 @@ struct PopupView: View {
                         "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")!)
                 }
             }
+        case .modelNotReady:
+            VStack(alignment: .leading, spacing: 8) {
+                Text(L10n.t("popup.model_not_ready"))
+                Button(L10n.t("popup.open_app_settings")) { model.onOpenSettings?() }
+            }
         case .streaming, .done:
             ScrollView {
                 Text(model.text).textSelection(.enabled)

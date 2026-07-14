@@ -195,12 +195,14 @@ private struct ModelTab: View {
                 case .ready:
                     Label(L10n.t("settings.downloaded"), systemImage: "checkmark.circle.fill")
                         .foregroundStyle(.green)
-                case .downloading:
-                    HStack(spacing: 8) {
-                        ProgressView().controlSize(.small)
-                        Text(L10n.t("settings.downloading"))
-                        Spacer()
-                        Button(L10n.t("onboarding.cancel_download")) { modelStore.cancelDownload() }
+                case .downloading(let progress):
+                    VStack(alignment: .leading, spacing: 4) {
+                        HStack(spacing: 8) {
+                            Text(String(format: L10n.t("settings.downloading"), progress * 100))
+                            Spacer()
+                            Button(L10n.t("onboarding.cancel_download")) { modelStore.cancelDownload() }
+                        }
+                        ProgressView(value: progress)
                     }
                 case .missing, .unknown:
                     Button(L10n.t("settings.download")) { modelStore.download() }

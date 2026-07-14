@@ -11,6 +11,8 @@
 "popup.no_selection" = "No text selected. Select something and press the shortcut again. If the app blocks capture, copy the text with ⌘C and retry.";
 "popup.permission" = "Accessibility permission is required to capture selected text.";
 "popup.open_settings" = "Open System Settings…";
+"popup.model_not_ready" = "The model hasn't been downloaded yet. Open Settings to download it.";
+"popup.open_app_settings" = "Open Settings…";
 "popup.copy" = "Copy";
 "popup.replace" = "Replace";
 "popup.retry" = "Try again";
@@ -32,7 +34,7 @@
 "onboarding.download_title" = "Downloading the model";
 "onboarding.download_body" = "%@ runs entirely on your Mac. One-time download.";
 "onboarding.model_suggested" = "Suggested for this Mac (%d GB of RAM).";
-"onboarding.downloading_size" = "Downloading about %.1f GB. The bar is shy, but the bytes are flowing.";
+"onboarding.downloading_size" = "%.0f%% of about %.1f GB.";
 "onboarding.cancel_download" = "Cancel download";
 "onboarding.model_ready" = "Ready";
 "onboarding.ready" = "All set";
@@ -63,7 +65,7 @@
 "settings.correction_tone" = "Tone";
 "settings.model" = "Model";
 "settings.download" = "Download model";
-"settings.downloading" = "Downloading…";
+"settings.downloading" = "Downloading… %.0f%%";
 "settings.downloaded" = "Downloaded";
 "settings.model_ram_warning" = "Needs %d GB of RAM; this Mac has %d GB. Expect slowdowns.";
 "settings.unload_after" = "Unload from RAM after %d min idle";

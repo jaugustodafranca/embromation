@@ -130,9 +130,10 @@ struct OnboardingView: View {
             Text(String(format: L10n.t("onboarding.model_suggested"), Int(ModelCatalog.physicalMemoryGB)))
                 .font(.caption).foregroundStyle(.tertiary)
                 .multilineTextAlignment(.center)
-            if case .downloading = modelStore.state {
-                ProgressView()
-                Text(String(format: L10n.t("onboarding.downloading_size"), modelStore.selectedSpec.approxSizeGB))
+            if case .downloading(let progress) = modelStore.state {
+                ProgressView(value: progress)
+                Text(String(format: L10n.t("onboarding.downloading_size"),
+                            progress * 100, modelStore.selectedSpec.approxSizeGB))
                     .font(.caption).foregroundStyle(.secondary)
                 Button(L10n.t("onboarding.cancel_download")) { modelStore.cancelDownload() }
             } else if modelStore.state == .ready {

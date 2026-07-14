@@ -7,6 +7,7 @@ final class PopupModel: ObservableObject {
         case working            // capturing / preparing model
         case noSelection
         case permissionNeeded
+        case modelNotReady      // selected model hasn't been downloaded yet
         case streaming
         case done
         case failed(String)
@@ -24,4 +25,5 @@ final class PopupModel: ObservableObject {
     var onReplace: (() -> Void)?
     var onRetry: (() -> Void)?
     var onRefine: ((String) -> Void)?
+    var onOpenSettings: (() -> Void)?
 }

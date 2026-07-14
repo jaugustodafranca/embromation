@@ -15,7 +15,8 @@ final class AppState: ObservableObject {
     lazy var coordinator = TranslationCoordinator(settings: settings,
                                                   capture: SelectionCapture(),
                                                   translator: translator,
-                                                  popup: popup)
+                                                  popup: popup,
+                                                  modelStore: modelStore)
 
     private var hotkey: HotkeyController?
 
