@@ -1,5 +1,16 @@
 # Changelog
 
+## v1.2.1 (2026-07-14)
+
+### Fixed
+- The popup no longer spins forever with no explanation when the selected
+  model hasn't been downloaded yet — it now points you at Settings to
+  download it.
+- Settings and the onboarding download step now show the actual download
+  percentage instead of a bare spinner.
+- Fixed a leading space/line break sometimes appearing before corrected or
+  translated text, introduced by the v1.2.0 reasoning pass.
+
 ## v1.2.0 (2026-07-13)
 
 ### Improved

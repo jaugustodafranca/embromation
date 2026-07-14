@@ -27,7 +27,7 @@ no account.
 The app is signed and notarized. It lives in your menu bar. Select text
 anywhere and press **⌃T** to translate or **⌃G** to fix grammar.
 
-**Status:** ✅ v1.0.0. See [CHANGELOG.md](CHANGELOG.md).
+**Status:** ✅ Stable, actively maintained. See [CHANGELOG.md](CHANGELOG.md) for release notes.
 
 Requires macOS 14+ on Apple Silicon.
 
