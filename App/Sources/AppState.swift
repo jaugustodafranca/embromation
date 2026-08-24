@@ -8,9 +8,12 @@ final class AppState: ObservableObject {
     let settings = SettingsStore()
     let popup = PopupController()
     lazy var modelStore = ModelStore(settings: settings)
-    lazy var translator: StreamingTranslator = MLXTranslator(
-        modelID: { SettingsData.snapshot().selectedModelID },
-        unloadAfterMinutes: { SettingsData.snapshot().unloadAfterMinutes }
+    lazy var translator: StreamingTranslator = EngineRoutingTranslator(
+        mlx: MLXTranslator(
+            modelID: { SettingsData.snapshot().selectedModelID },
+            unloadAfterMinutes: { SettingsData.snapshot().unloadAfterMinutes }
+        ),
+        apple: AppleIntelligenceEngine.makeTranslator()
     )
     lazy var coordinator = TranslationCoordinator(settings: settings,
                                                   capture: SelectionCapture(),

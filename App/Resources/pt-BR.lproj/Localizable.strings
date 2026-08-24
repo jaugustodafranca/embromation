@@ -63,6 +63,15 @@
 "settings.correction_direct" = "Substituir direto";
 "settings.correction_hint" = "Substituir direto cola o texto corrigido por cima da seleção sem mostrar o popup. Erros sempre abrem o popup.";
 "settings.correction_tone" = "Tom";
+"settings.engine" = "Motor";
+"settings.engine_local" = "Modelo local (baixado)";
+"settings.engine_apple" = "Apple Intelligence (sem download)";
+"settings.engine_apple_ready" = "Apple Intelligence pronto — nada para baixar.";
+"settings.engine_apple_not_enabled" = "Ative o Apple Intelligence nos Ajustes do Sistema para usar este motor.";
+"settings.engine_apple_not_eligible" = "Este Mac não é compatível com o Apple Intelligence.";
+"settings.engine_apple_not_ready" = "O modelo do Apple Intelligence ainda está sendo preparado. Tente novamente em instantes.";
+"settings.engine_apple_unavailable" = "O Apple Intelligence está indisponível no momento.";
+"settings.engine_apple_requires_macos26" = "Requer o macOS 26 ou mais recente.";
 "settings.model" = "Modelo";
 "settings.download" = "Baixar modelo";
 "settings.downloading" = "Baixando… %.0f%%";

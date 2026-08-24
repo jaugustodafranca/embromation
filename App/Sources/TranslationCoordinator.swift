@@ -107,7 +107,11 @@ final class TranslationCoordinator {
         // Without this, translate() falls through to MLXTranslator's
         // loadContainer(), which silently starts the multi-GB download with
         // no progress reported to the popup — the spinner just runs forever.
-        guard modelStore.state == .ready else {
+        // The Apple Intelligence engine has no download, so the guard only
+        // applies when the request will actually route to MLX (which includes
+        // an .appleIntelligence preference on an OS that can't honor it).
+        let routesToMLX = settings.data.engine == .mlx || !AppleIntelligenceEngine.isSupported
+        guard !routesToMLX || modelStore.state == .ready else {
             popup.model.phase = .modelNotReady
             popup.show()
             return

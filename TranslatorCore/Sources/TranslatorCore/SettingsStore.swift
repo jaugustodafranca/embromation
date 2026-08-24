@@ -8,6 +8,9 @@ public struct SettingsData: Codable, Equatable, Sendable {
     public var correctionInstructions = ""
     public var glossary: [String] = []
     public var selectedModelID = ModelCatalog.recommended().id
+    /// `.mlx` by default so existing installs keep their behavior; the user
+    /// opts into Apple Intelligence in Settings when it's available.
+    public var engine: TranslationEngine = .mlx
     public var unloadAfterMinutes = 10
     public var didOnboard = false
     public var correctionReplacesDirectly = false
@@ -23,7 +26,7 @@ public struct SettingsData: Codable, Equatable, Sendable {
 
     private enum CodingKeys: String, CodingKey {
         case pair, tone, customInstructions, correctionInstructions, glossary,
-             selectedModelID, unloadAfterMinutes, didOnboard,
+             selectedModelID, engine, unloadAfterMinutes, didOnboard,
              correctionReplacesDirectly, correctionTone
     }
 
@@ -38,6 +41,7 @@ public struct SettingsData: Codable, Equatable, Sendable {
         correctionInstructions = try c.decodeIfPresent(String.self, forKey: .correctionInstructions) ?? defaults.correctionInstructions
         glossary = try c.decodeIfPresent([String].self, forKey: .glossary) ?? defaults.glossary
         selectedModelID = try c.decodeIfPresent(String.self, forKey: .selectedModelID) ?? defaults.selectedModelID
+        engine = try c.decodeIfPresent(TranslationEngine.self, forKey: .engine) ?? defaults.engine
         unloadAfterMinutes = try c.decodeIfPresent(Int.self, forKey: .unloadAfterMinutes) ?? defaults.unloadAfterMinutes
         didOnboard = try c.decodeIfPresent(Bool.self, forKey: .didOnboard) ?? defaults.didOnboard
         correctionReplacesDirectly = try c.decodeIfPresent(Bool.self, forKey: .correctionReplacesDirectly) ?? defaults.correctionReplacesDirectly

@@ -55,6 +55,10 @@ targets:
         ENABLE_HARDENED_RUNTIME: YES
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         SWIFT_VERSION: 5.10
+        # FoundationModels exists only on macOS 26+ while the app deploys to
+        # 14.0 — weak-link so the binary still launches on older systems; all
+        # uses sit behind @available checks in AppleFMTranslator.
+        OTHER_LDFLAGS: ["$(inherited)", "-weak_framework", "FoundationModels"]
         MARKETING_VERSION: 1.2.1
         CURRENT_PROJECT_VERSION: 5
     dependencies:

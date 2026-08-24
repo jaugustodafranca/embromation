@@ -175,6 +175,35 @@ private struct ModelTab: View {
 
     var body: some View {
         Form {
+            Section(L10n.t("settings.engine")) {
+                Picker(L10n.t("settings.engine"), selection: $settings.data.engine) {
+                    Text(L10n.t("settings.engine_local")).tag(TranslationEngine.mlx)
+                    // Below macOS 26 the option isn't offered at all — a
+                    // persisted .appleIntelligence preference (e.g. settings
+                    // synced from another Mac) still routes to MLX.
+                    if AppleIntelligenceEngine.isSupported {
+                        Text(L10n.t("settings.engine_apple")).tag(TranslationEngine.appleIntelligence)
+                    }
+                }
+                if settings.data.engine == .appleIntelligence {
+                    if let message = AppleIntelligenceEngine.unavailabilityMessage {
+                        Label(message, systemImage: "exclamationmark.triangle")
+                            .font(.caption).foregroundStyle(.orange)
+                    } else {
+                        Label(L10n.t("settings.engine_apple_ready"), systemImage: "checkmark.circle.fill")
+                            .foregroundStyle(.green)
+                    }
+                }
+            }
+            if settings.data.engine == .mlx {
+                localModelSection
+            }
+        }
+        .formStyle(.grouped)
+        .fixedSize(horizontal: false, vertical: true)
+    }
+
+    private var localModelSection: some View {
             Section(L10n.t("settings.model")) {
                 Picker(L10n.t("settings.model"), selection: $settings.data.selectedModelID) {
                     ForEach(ModelCatalog.all) { spec in
@@ -214,8 +243,5 @@ private struct ModelTab: View {
                 Stepper(String(format: L10n.t("settings.unload_after"), settings.data.unloadAfterMinutes),
                         value: $settings.data.unloadAfterMinutes, in: 1...60)
             }
-        }
-        .formStyle(.grouped)
-        .fixedSize(horizontal: false, vertical: true)
     }
 }
