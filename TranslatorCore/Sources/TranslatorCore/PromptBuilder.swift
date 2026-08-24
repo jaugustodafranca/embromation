@@ -18,6 +18,15 @@ public struct ChatMessage: Equatable, Sendable {
 public struct PromptBuilder: Sendable {
     public init() {}
 
+    /// Markdown, Slack and WhatsApp each mark up text differently (**bold**
+    /// vs *bold*), and models like to decorate output with emphasis the
+    /// input never had — chat apps render foreign markup literally. Rather
+    /// than detecting dialects, mirror the input: reuse its own symbols,
+    /// never convert between conventions, never introduce new ones. Symbols
+    /// already present are covered by the preserve clause above.
+    static let formattingMirrorClause =
+        "Formatting: mirror the message's own style. Reuse the formatting symbols the message already uses (like **bold**, *bold*, _italic_ or backticks) exactly as the message does, never convert one convention into another, and never introduce formatting symbols the message does not already contain — plain text in, plain text out."
+
     /// Awkward-but-grammatical sentences fall outside the error checklist, so
     /// naturalness must be named as its own category — with the meaning guard
     /// in the same sentence, so the license to rewrite never becomes a
@@ -35,6 +44,7 @@ public struct PromptBuilder: Sendable {
         var lines: [String] = []
         lines.append("You are a translation engine. Translate the user's message from \(source.englishName) to \(target.englishName).")
         lines.append("Preserve emoji, keyboard shortcuts (like ⌃T), code, URLs, numbers and any other symbols exactly as written — never drop or translate them.")
+        lines.append(Self.formattingMirrorClause)
         lines.append(tone.promptClause)
         let custom = customInstructions.trimmingCharacters(in: .whitespacesAndNewlines)
         if !custom.isEmpty {
@@ -66,6 +76,7 @@ public struct PromptBuilder: Sendable {
         lines.append("Fix every instance of: incorrect capitalization (sentence starts, proper nouns, acronyms like API), subject-verb agreement, missing or wrong punctuation, and misspelled words — even in short, casual, or technical messages.")
         lines.append(Self.naturalRewordingClause)
         lines.append("Preserve emoji, keyboard shortcuts (like ⌃T), code, URLs, numbers and any other symbols exactly as written — never drop or translate them.")
+        lines.append(Self.formattingMirrorClause)
         if let clause = correctionTone.promptClause {
             lines.append(clause)
         } else {
@@ -125,6 +136,7 @@ public struct PromptBuilder: Sendable {
             lines.append(Self.naturalRewordingClause)
         }
         lines.append("Preserve emoji, keyboard shortcuts (like ⌃T), code, URLs, numbers and any other symbols exactly as written — never drop or translate them.")
+        lines.append(Self.formattingMirrorClause)
         switch request.mode {
         case .translate:
             lines.append(request.tone.promptClause)

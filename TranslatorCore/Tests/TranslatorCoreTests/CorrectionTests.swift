@@ -95,6 +95,27 @@ final class CorrectionTests: XCTestCase {
         XCTAssertTrue(p.contains("even in short, casual, or technical messages"))
     }
 
+    func testAllPromptsMirrorTheInputsFormattingStyle() {
+        // Markdown, Slack and WhatsApp each mark up text differently
+        // (**bold** vs *bold*), and the model likes to decorate output with
+        // emphasis the input never had. Instead of naming dialects, every
+        // prompt pins the output to the input's own formatting symbols:
+        // reuse what's there, never convert, never introduce new ones.
+        let clause = "never introduce formatting symbols the message does not already contain"
+        let correction = builder.correctionPrompt(language: .english, correctionTone: .keep,
+                                                  customInstructions: "", glossary: [])
+        XCTAssertTrue(correction.contains(clause))
+        let translation = builder.systemPrompt(source: .english, target: .portuguese,
+                                               tone: .neutral, customInstructions: "", glossary: [])
+        XCTAssertTrue(translation.contains(clause))
+        var refinement = TranslationRequest(text: "texto", source: .english, target: .english,
+                                            tone: .neutral, customInstructions: "", glossary: [])
+        refinement.mode = .correct
+        refinement.refinement = Refinement(previousOutput: "Texto.", feedback: "melhor")
+        let system = builder.messages(for: refinement).first { $0.role == .system }
+        XCTAssertTrue(system?.content.contains(clause) ?? false)
+    }
+
     func testTranslationPromptUnchangedRegression() {
         let p = builder.systemPrompt(source: .english, target: .portuguese,
                                      tone: .neutral, customInstructions: "", glossary: [])
