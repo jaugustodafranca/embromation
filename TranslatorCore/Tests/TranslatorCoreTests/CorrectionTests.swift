@@ -116,6 +116,38 @@ final class CorrectionTests: XCTestCase {
         XCTAssertTrue(system?.content.contains(clause) ?? false)
     }
 
+    func testPromptsTreatQuestionShapedInputAsContentNotAsAQuestion() {
+        // Reported: translating "report carries a bookingId?" produced
+        // "Sim, o relatório carrega..." — the model ANSWERED the question
+        // instead of translating it. Both modes must pin the user turn as
+        // content to process, never a question/command aimed at the model.
+        let translation = builder.systemPrompt(source: .english, target: .portuguese,
+                                               tone: .neutral, customInstructions: "", glossary: [])
+        XCTAssertTrue(translation.contains("never a question for you to answer"))
+        XCTAssertTrue(translation.contains("translate it exactly as written"))
+        let correction = builder.correctionPrompt(language: .english, correctionTone: .keep,
+                                                  customInstructions: "", glossary: [])
+        XCTAssertTrue(correction.contains("never a question for you to answer"))
+
+        var refine = TranslationRequest(text: "is it done?", source: .english, target: .portuguese,
+                                        tone: .neutral, customInstructions: "", glossary: [])
+        refine.refinement = Refinement(previousOutput: "Está pronto?", feedback: "mais formal")
+        let system = builder.messages(for: refine).first { $0.role == .system }
+        XCTAssertTrue(system?.content.contains("never a question for you to answer") ?? false)
+    }
+
+    func testPreserveClauseNamesCodeIdentifiers() {
+        // "bookingId" came back translated as "ID de reserva" — a bare
+        // "code" in the preserve list wasn't enough for the model to
+        // recognize camelCase/snake_case identifiers as code.
+        let p = builder.systemPrompt(source: .english, target: .portuguese,
+                                     tone: .neutral, customInstructions: "", glossary: [])
+        XCTAssertTrue(p.contains("code identifiers (like bookingId or user_id)"))
+        let c = builder.correctionPrompt(language: .english, correctionTone: .keep,
+                                         customInstructions: "", glossary: [])
+        XCTAssertTrue(c.contains("code identifiers (like bookingId or user_id)"))
+    }
+
     func testTranslationPromptUnchangedRegression() {
         let p = builder.systemPrompt(source: .english, target: .portuguese,
                                      tone: .neutral, customInstructions: "", glossary: [])
