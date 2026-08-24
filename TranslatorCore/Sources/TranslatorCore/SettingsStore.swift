@@ -11,6 +11,10 @@ public struct SettingsData: Codable, Equatable, Sendable {
     /// `.mlx` by default so existing installs keep their behavior; the user
     /// opts into Apple Intelligence in Settings when it's available.
     public var engine: TranslationEngine = .mlx
+    /// User-edited prompt base blocks; empty = the built-in defaults in
+    /// PromptBuilder (which also serve as the "restore" values in Settings).
+    public var translationPromptTemplate = ""
+    public var correctionPromptTemplate = ""
     public var unloadAfterMinutes = 10
     public var didOnboard = false
     public var correctionReplacesDirectly = false
@@ -27,7 +31,8 @@ public struct SettingsData: Codable, Equatable, Sendable {
     private enum CodingKeys: String, CodingKey {
         case pair, tone, customInstructions, correctionInstructions, glossary,
              selectedModelID, engine, unloadAfterMinutes, didOnboard,
-             correctionReplacesDirectly, correctionTone
+             correctionReplacesDirectly, correctionTone,
+             translationPromptTemplate, correctionPromptTemplate
     }
 
     /// Tolerant decoding: any missing key falls back to its default so adding
@@ -42,6 +47,8 @@ public struct SettingsData: Codable, Equatable, Sendable {
         glossary = try c.decodeIfPresent([String].self, forKey: .glossary) ?? defaults.glossary
         selectedModelID = try c.decodeIfPresent(String.self, forKey: .selectedModelID) ?? defaults.selectedModelID
         engine = try c.decodeIfPresent(TranslationEngine.self, forKey: .engine) ?? defaults.engine
+        translationPromptTemplate = try c.decodeIfPresent(String.self, forKey: .translationPromptTemplate) ?? defaults.translationPromptTemplate
+        correctionPromptTemplate = try c.decodeIfPresent(String.self, forKey: .correctionPromptTemplate) ?? defaults.correctionPromptTemplate
         unloadAfterMinutes = try c.decodeIfPresent(Int.self, forKey: .unloadAfterMinutes) ?? defaults.unloadAfterMinutes
         didOnboard = try c.decodeIfPresent(Bool.self, forKey: .didOnboard) ?? defaults.didOnboard
         correctionReplacesDirectly = try c.decodeIfPresent(Bool.self, forKey: .correctionReplacesDirectly) ?? defaults.correctionReplacesDirectly
@@ -87,6 +94,14 @@ public final class SettingsStore: ObservableObject {
             guard !Task.isCancelled else { return }
             self?.flush()
         }
+    }
+
+    /// Resets every setting to its fresh-install default — except the
+    /// onboarding flag: "restore defaults" must never re-run onboarding.
+    public func restoreDefaults() {
+        let didOnboard = data.didOnboard
+        data = SettingsData()
+        data.didOnboard = didOnboard
     }
 
     /// Writes pending changes immediately. Call on app termination.

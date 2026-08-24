@@ -65,6 +65,39 @@ final class SettingsStoreTests: XCTestCase {
     }
 
     @MainActor
+    func testPromptTemplatesDefaultEmptyAndSurviveReload() {
+        let suite = "test-\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suite)!
+        let store = SettingsStore(defaults: defaults)
+        XCTAssertEqual(store.data.translationPromptTemplate, "")
+        XCTAssertEqual(store.data.correctionPromptTemplate, "")
+        store.data.translationPromptTemplate = "Translate from {source} to {target}."
+        store.data.correctionPromptTemplate = "Fix my {language} text."
+        store.flush()
+        let reloaded = SettingsStore(defaults: UserDefaults(suiteName: suite)!)
+        XCTAssertEqual(reloaded.data.translationPromptTemplate, "Translate from {source} to {target}.")
+        XCTAssertEqual(reloaded.data.correctionPromptTemplate, "Fix my {language} text.")
+    }
+
+    @MainActor
+    func testRestoreDefaultsResetsEverythingButOnboarding() {
+        let defaults = UserDefaults(suiteName: "test-\(UUID().uuidString)")!
+        let store = SettingsStore(defaults: defaults)
+        store.data.tone = .formal
+        store.data.glossary = ["deploy"]
+        store.data.translationPromptTemplate = "custom"
+        store.data.engine = .appleIntelligence
+        store.data.didOnboard = true
+        store.restoreDefaults()
+        XCTAssertEqual(store.data.tone, .neutral)
+        XCTAssertEqual(store.data.glossary, [])
+        XCTAssertEqual(store.data.translationPromptTemplate, "")
+        XCTAssertEqual(store.data.engine, .mlx)
+        // Resetting settings must never re-run onboarding.
+        XCTAssertTrue(store.data.didOnboard)
+    }
+
+    @MainActor
     func testCorrectionFlowDefaultsToPopup() {
         let defaults = UserDefaults(suiteName: "test-\(UUID().uuidString)")!
         let store = SettingsStore(defaults: defaults)

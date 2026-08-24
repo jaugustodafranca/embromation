@@ -26,6 +26,10 @@ public struct TranslationRequest: Equatable, Sendable {
     public var refinement: Refinement?
     /// Tone for `.correct` requests only; `.translate` requests use `tone`.
     public var correctionTone: CorrectionTone
+    /// User-edited prompt templates (Settings › Prompt); empty = built-in
+    /// defaults. Carried on the request so PromptBuilder stays pure.
+    public var translationTemplate: String = ""
+    public var correctionTemplate: String = ""
 
     public init(text: String, source: Language, target: Language,
                 tone: Tone, customInstructions: String, glossary: [String],

@@ -90,3 +90,23 @@
 "settings.tone_formal" = "Formal";
 "settings.tone_casual" = "Casual";
 "settings.correction_instructions_placeholder" = "ex.: mantenha meu tom informal e as minhas gírias.";
+
+/* Prompt editing */
+"settings.prompt" = "Prompt";
+"settings.prompt_restore" = "Restaurar prompt padrão";
+"settings.prompt_hint_translation" = "As instruções base enviadas ao modelo. {source} e {target} são substituídos pelo par de idiomas. Tom, instruções extras e o glossário são sempre acrescentados.";
+"settings.prompt_hint_correction" = "As instruções base enviadas ao modelo. {language} é substituído pelo idioma detectado. Tom, instruções extras e o glossário são sempre acrescentados.";
+"settings.restore_all" = "Restaurar todos os ajustes";
+"settings.restore_all_hint" = "Restaura idiomas, tons, instruções, glossário, prompts, motor e modelo. Modelos baixados permanecem no disco.";
+"settings.restore_all_confirm_title" = "Restaurar todos os ajustes?";
+"settings.restore_all_confirm" = "Restaurar padrões";
+"settings.restore_all_confirm_message" = "Todos os ajustes voltam ao valor original. Isso não pode ser desfeito.";
+
+/* About */
+"settings.tab_about" = "Sobre";
+"about.app" = "App";
+"about.version" = "Versão";
+"about.engine" = "Motor ativo";
+"about.website" = "Repositório no GitHub";
+"about.releases" = "Releases e changelog";
+"about.tagline" = "Do bom e velho embromar: a arte de enrolar no inglês. Tudo roda no seu Mac — sem conta e sem API key.";

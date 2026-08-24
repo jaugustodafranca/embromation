@@ -68,11 +68,12 @@ final class TranslationCoordinator {
         guard !lastCapturedText.isEmpty else { return }
         let detected = LanguageDetector().detect(lastCapturedText)
         let source = detected ?? settings.data.pair.secondary
-        let request = TranslationRequest(text: lastCapturedText, source: source, target: language,
+        var request = TranslationRequest(text: lastCapturedText, source: source, target: language,
                                          tone: settings.data.tone,
                                          customInstructions: settings.data.customInstructions,
                                          glossary: settings.data.glossary,
                                          mode: .translate)
+        request.translationTemplate = settings.data.translationPromptTemplate
         currentTask?.cancel()
         currentTask = Task { await stream(request) }
     }
@@ -150,12 +151,14 @@ final class TranslationCoordinator {
         let instructions = mode == .correct
             ? settings.data.correctionInstructions
             : settings.data.customInstructions
-        let request = TranslationRequest(text: text, source: source, target: target,
+        var request = TranslationRequest(text: text, source: source, target: target,
                                          tone: settings.data.tone,
                                          customInstructions: instructions,
                                          glossary: settings.data.glossary,
                                          mode: mode,
                                          correctionTone: settings.data.correctionTone)
+        request.translationTemplate = settings.data.translationPromptTemplate
+        request.correctionTemplate = settings.data.correctionPromptTemplate
         if direct {
             await directCorrect(request)
         } else {

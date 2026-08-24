@@ -90,3 +90,23 @@
 "settings.tone_formal" = "Formal";
 "settings.tone_casual" = "Casual";
 "settings.correction_instructions_placeholder" = "e.g. keep my informal tone and my slang.";
+
+/* Prompt editing */
+"settings.prompt" = "Prompt";
+"settings.prompt_restore" = "Restore default prompt";
+"settings.prompt_hint_translation" = "The base instructions sent to the model. {source} and {target} are replaced with the language pair. Tone, extra instructions and the glossary are always appended.";
+"settings.prompt_hint_correction" = "The base instructions sent to the model. {language} is replaced with the detected language. Tone, extra instructions and the glossary are always appended.";
+"settings.restore_all" = "Restore all settings to defaults";
+"settings.restore_all_hint" = "Resets languages, tones, instructions, glossary, prompts, engine and model choices. Downloaded models stay on disk.";
+"settings.restore_all_confirm_title" = "Restore all settings?";
+"settings.restore_all_confirm" = "Restore defaults";
+"settings.restore_all_confirm_message" = "Every setting goes back to its original value. This cannot be undone.";
+
+/* About */
+"settings.tab_about" = "About";
+"about.app" = "App";
+"about.version" = "Version";
+"about.engine" = "Active engine";
+"about.website" = "GitHub repository";
+"about.releases" = "Releases & changelog";
+"about.tagline" = "From the good old embromar: the art of winging it in English. Everything runs on your Mac — no account, no API key.";

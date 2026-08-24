@@ -9,7 +9,7 @@ struct SettingsView: View {
 
     var body: some View {
         TabView {
-            GeneralTab(settings: settings)
+            GeneralTab(settings: settings, modelStore: modelStore)
                 .tabItem { Label(L10n.t("settings.tab_general"), systemImage: "gearshape") }
             TranslationTab(settings: settings)
                 .tabItem { Label(L10n.t("settings.tab_translation"), systemImage: "character.bubble") }
@@ -19,13 +19,80 @@ struct SettingsView: View {
                 .tabItem { Label(L10n.t("settings.tab_glossary"), systemImage: "book.closed") }
             ModelTab(settings: settings, modelStore: modelStore)
                 .tabItem { Label(L10n.t("settings.tab_model"), systemImage: "cpu") }
+            AboutTab()
+                .tabItem { Label(L10n.t("settings.tab_about"), systemImage: "info.circle") }
         }
         .frame(width: 540)
     }
 }
 
+/// Editable base block of a prompt. The stored template is "" while the text
+/// matches the built-in default, so defaults keep improving with app updates
+/// until the user actually diverges; Restore just clears the override.
+private struct PromptTemplateEditor: View {
+    @Binding var stored: String
+    let defaultTemplate: String
+    let hintKey: String
+
+    var body: some View {
+        Section(L10n.t("settings.prompt")) {
+            TextEditor(text: displayed)
+                .font(.body.monospaced())
+                .frame(minHeight: 120)
+                .scrollContentBackground(.hidden)
+            Text(L10n.t(hintKey))
+                .font(.caption).foregroundStyle(.secondary)
+            Button(L10n.t("settings.prompt_restore")) { stored = "" }
+                .disabled(stored.isEmpty)
+        }
+    }
+
+    private var displayed: Binding<String> {
+        Binding(
+            get: { stored.isEmpty ? defaultTemplate : stored },
+            set: { stored = $0 == defaultTemplate ? "" : $0 }
+        )
+    }
+}
+
+private struct AboutTab: View {
+    private var version: String {
+        Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "?"
+    }
+    private var build: String {
+        Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "?"
+    }
+
+    var body: some View {
+        Form {
+            Section {
+                LabeledContent(L10n.t("about.app"), value: "Embromation")
+                LabeledContent(L10n.t("about.version"), value: "\(version) (\(build))")
+                LabeledContent(L10n.t("about.engine"),
+                               value: AppleIntelligenceEngine.isSupported && SettingsData.snapshot().engine == .appleIntelligence
+                                   ? L10n.t("settings.engine_apple")
+                                   : L10n.t("settings.engine_local"))
+            }
+            Section {
+                Link(L10n.t("about.website"),
+                     destination: URL(string: "https://github.com/jaugustodafranca/embromation")!)
+                Link(L10n.t("about.releases"),
+                     destination: URL(string: "https://github.com/jaugustodafranca/embromation/releases")!)
+            }
+            Section {
+                Text(L10n.t("about.tagline"))
+                    .font(.caption).foregroundStyle(.secondary)
+            }
+        }
+        .formStyle(.grouped)
+        .fixedSize(horizontal: false, vertical: true)
+    }
+}
+
 private struct GeneralTab: View {
     @ObservedObject var settings: SettingsStore
+    @ObservedObject var modelStore: ModelStore
+    @State private var confirmingRestore = false
 
     var body: some View {
         Form {
@@ -42,9 +109,27 @@ private struct GeneralTab: View {
             Section(L10n.t("settings.general")) {
                 Toggle(L10n.t("settings.launch_at_login"), isOn: launchAtLogin)
             }
+            Section {
+                Button(L10n.t("settings.restore_all"), role: .destructive) {
+                    confirmingRestore = true
+                }
+                Text(L10n.t("settings.restore_all_hint"))
+                    .font(.caption).foregroundStyle(.secondary)
+            }
         }
         .formStyle(.grouped)
         .fixedSize(horizontal: false, vertical: true)
+        .confirmationDialog(L10n.t("settings.restore_all_confirm_title"),
+                            isPresented: $confirmingRestore) {
+            Button(L10n.t("settings.restore_all_confirm"), role: .destructive) {
+                settings.restoreDefaults()
+                // The reset may change the selected model/engine — recheck
+                // what's on disk so the Model tab shows the right state.
+                modelStore.refresh()
+            }
+        } message: {
+            Text(L10n.t("settings.restore_all_confirm_message"))
+        }
     }
 
     /// Spec §4.7 "iniciar no login" — backed by SMAppService (macOS 13+).
@@ -87,6 +172,9 @@ private struct TranslationTab: View {
                     .lineLimit(4...8)
                     .multilineTextAlignment(.leading)
             }
+            PromptTemplateEditor(stored: $settings.data.translationPromptTemplate,
+                                 defaultTemplate: PromptBuilder.defaultTranslationTemplate,
+                                 hintKey: "settings.prompt_hint_translation")
         }
         .formStyle(.grouped)
         .fixedSize(horizontal: false, vertical: true)
@@ -123,6 +211,9 @@ private struct CorrectionTab: View {
                     .lineLimit(4...8)
                     .multilineTextAlignment(.leading)
             }
+            PromptTemplateEditor(stored: $settings.data.correctionPromptTemplate,
+                                 defaultTemplate: PromptBuilder.defaultCorrectionTemplate,
+                                 hintKey: "settings.prompt_hint_correction")
         }
         .formStyle(.grouped)
         .fixedSize(horizontal: false, vertical: true)
