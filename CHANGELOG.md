@@ -1,5 +1,22 @@
 # Changelog
 
+## v1.3.0 (2026-08-24)
+
+### Features
+- Apple Intelligence engine (macOS 26+): a new Engine option in Settings
+  uses the Mac's built-in on-device model — no multi-GB download, near
+  instant load, and noticeably faster corrections. Everything stays local.
+  The downloaded local models remain the default and the only option on
+  older systems.
+
+### Improved
+- Fix grammar now also rewrites awkwardly worded sentences to read the way
+  a native speaker would phrase them — while never changing the meaning
+  (nothing added, nothing removed, intent untouched).
+- Corrections on the local engine are much faster: the reasoning pass was
+  running with sampling settings that Qwen3 explicitly warns against,
+  which could spiral into a ~100-second loop before answering.
+
 ## v1.2.1 (2026-07-14)
 
 ### Fixed
