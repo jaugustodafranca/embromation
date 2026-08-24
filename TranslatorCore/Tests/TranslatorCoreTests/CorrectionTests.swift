@@ -120,6 +120,21 @@ final class CorrectionTests: XCTestCase {
         XCTAssertTrue(c.contains("code identifiers (like bookingId or user_id)"))
     }
 
+    func testPromptsForbidShorteningAndSentenceTypeChanges() {
+        // Reported: correcting "Zendesk request sent a bookingId?" produced
+        // "Zendesk sent a bookingId." — the model dropped "request" AND
+        // turned the question into a statement. Both prompts must forbid
+        // summarizing/shortening and changing the sentence type.
+        let keepType = "A question must stay a question"
+        let keepWords = "Never shorten, summarize or simplify"
+        let c = builder.correctionPrompt(language: .english, glossary: [])
+        XCTAssertTrue(c.contains(keepType))
+        XCTAssertTrue(c.contains(keepWords))
+        let t = builder.systemPrompt(source: .english, target: .portuguese, glossary: [])
+        XCTAssertTrue(t.contains(keepType))
+        XCTAssertTrue(t.contains(keepWords))
+    }
+
     func testTranslationPromptUnchangedRegression() {
         let p = builder.systemPrompt(source: .english, target: .portuguese,
                                      glossary: [])

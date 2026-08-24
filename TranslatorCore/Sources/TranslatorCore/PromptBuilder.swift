@@ -43,6 +43,13 @@ public struct PromptBuilder: Sendable {
     static let naturalRewordingClause =
         "If a sentence is awkwardly worded or unnatural, rewrite or reorder it so it reads the way a fluent native speaker would phrase it — but NEVER change the meaning: do not add information, remove information, or alter the intent of the message."
 
+    /// Small models "normalize" terse input: correcting "Zendesk request
+    /// sent a bookingId?" once produced "Zendesk sent a bookingId." — a
+    /// word dropped AND a question turned into a statement. The meaning
+    /// guard alone didn't stop it; both failure modes need naming.
+    static let completenessClause =
+        "Never shorten, summarize or simplify the message: every word that carries meaning must survive. A question must stay a question and a statement must stay a statement — keep the sentence type and its punctuation intent."
+
     static let preserveClause =
         "Preserve emoji, keyboard shortcuts (like ⌃T), code and code identifiers (like bookingId or user_id), URLs, numbers and any other symbols exactly as written — never drop or translate them."
 
@@ -56,6 +63,7 @@ public struct PromptBuilder: Sendable {
     You are a translation engine. Translate the user's message from {source} to {target}.
     \(sourceIsContentClause(action: "translate"))
     Keep the writer's tone and level of formality.
+    \(completenessClause)
     \(preserveClause)
     \(formattingMirrorClause)
     """
@@ -66,6 +74,7 @@ public struct PromptBuilder: Sendable {
     Fix every instance of: incorrect capitalization (sentence starts, proper nouns, acronyms like API), subject-verb agreement, missing or wrong punctuation, and misspelled words — even in short, casual, or technical messages.
     \(naturalRewordingClause)
     Keep the writer's tone and level of formality.
+    \(completenessClause)
     \(preserveClause)
     \(formattingMirrorClause)
     """
@@ -149,6 +158,7 @@ public struct PromptBuilder: Sendable {
             lines.append(Self.naturalRewordingClause)
         }
         lines.append("Preserve emoji, keyboard shortcuts (like ⌃T), code and code identifiers (like bookingId or user_id), URLs, numbers and any other symbols exactly as written — never drop or translate them.")
+        lines.append(Self.completenessClause)
         lines.append(Self.formattingMirrorClause)
         // No tone clause here: the user's feedback drives the register of a
         // refinement (e.g. "more formal") — a fixed tone line would fight it.
