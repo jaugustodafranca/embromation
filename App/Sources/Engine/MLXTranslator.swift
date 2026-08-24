@@ -56,16 +56,18 @@ actor MLXTranslator: StreamingTranslator {
                 input: UserInput(chat: chat, additionalContext: ["enable_thinking": enableThinking]))
             // Refinements need a higher temperature: with the previous output
             // in the chat, low temperature anchors the model into repeating
-            // it. Corrections (first pass) get a lower temperature and a
-            // tighter topP than translation — proofreading has one right
-            // answer, and cutting the tail of the sampling distribution
-            // makes the model less likely to leave a caught error unedited.
+            // it. Corrections run with thinking enabled, and Qwen3's usage
+            // guide forbids near-greedy sampling there: low temperature makes
+            // the <think> block degrade into endless repetition, which is
+            // exactly a runaway-latency bug — the model loops until it burns
+            // the whole token budget before the answer starts. 0.6/0.95 is
+            // the officially recommended thinking-mode sampling.
             let temperature: Float
             let topP: Float
             if request.refinement != nil {
                 (temperature, topP) = (0.7, 1.0)
             } else if request.mode == .correct {
-                (temperature, topP) = (0.2, 0.9)
+                (temperature, topP) = (0.6, 0.95)
             } else {
                 (temperature, topP) = (0.3, 1.0)
             }

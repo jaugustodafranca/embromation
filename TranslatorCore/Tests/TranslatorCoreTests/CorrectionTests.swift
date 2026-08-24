@@ -31,12 +31,48 @@ final class CorrectionTests: XCTestCase {
     }
 
     func testCorrectionPromptKeepPreservesOriginalToneAndAddsNoClause() {
+        // .keep must not promise "same tone" in the commitment sentence —
+        // rewording an awkward sentence would read as breaking that promise.
+        // Tone preservation lives in its own clause, phrased to coexist
+        // with reordering (tone ≠ word order).
         let p = builder.correctionPrompt(language: .english, correctionTone: .keep,
                                          customInstructions: "", glossary: [])
-        XCTAssertTrue(p.contains("keeping the same language (English), meaning and tone."))
+        XCTAssertTrue(p.contains("keeping the same language (English) and meaning."))
+        XCTAssertFalse(p.contains("meaning and tone."))
+        XCTAssertTrue(p.contains("Keep the writer's tone and level of formality."))
         XCTAssertFalse(p.contains(Tone.neutral.promptClause))
         XCTAssertFalse(p.contains(Tone.formal.promptClause))
         XCTAssertFalse(p.contains(Tone.casual.promptClause))
+    }
+
+    func testCorrectionPromptNonKeepOmitsTonePreservationClause() {
+        let p = builder.correctionPrompt(language: .english, correctionTone: .formal,
+                                         customInstructions: "", glossary: [])
+        XCTAssertFalse(p.contains("Keep the writer's tone and level of formality."))
+    }
+
+    func testCorrectionPromptAsksForNaturalRewordingWithMeaningGuard() {
+        // Awkward-but-grammatical sentences fall outside the error checklist,
+        // so naturalness must be its own category — with the meaning guard in
+        // the same sentence so the license to rewrite never becomes a license
+        // to paraphrase the intent away.
+        let p = builder.correctionPrompt(language: .english, correctionTone: .keep,
+                                         customInstructions: "", glossary: [])
+        XCTAssertTrue(p.contains("rewrite or reorder it"))
+        XCTAssertTrue(p.contains("fluent native speaker"))
+        XCTAssertTrue(p.contains("NEVER change the meaning"))
+        XCTAssertTrue(p.contains("do not add information, remove information"))
+    }
+
+    func testCorrectionRefinementPromptAsksForNaturalRewording() {
+        var request = TranslationRequest(text: "texto", source: .english, target: .english,
+                                         tone: .neutral, customInstructions: "", glossary: [])
+        request.mode = .correct
+        request.refinement = Refinement(previousOutput: "Texto.", feedback: "mais natural")
+        let system = builder.messages(for: request).first { $0.role == .system }
+        XCTAssertNotNil(system)
+        XCTAssertTrue(system?.content.contains("rewrite or reorder it") ?? false)
+        XCTAssertTrue(system?.content.contains("NEVER change the meaning") ?? false)
     }
 
     func testCorrectionPromptNonKeepDropsToneWordFromLineAndAppendsMatchingClause() {
