@@ -36,9 +36,13 @@ private struct PromptTemplateEditor: View {
 
     var body: some View {
         Section(L10n.t("settings.prompt")) {
+            // Fixed height: the settings window sizes itself to the form's
+            // content, so an editor that grows with the prompt text makes
+            // the whole window taller than the screen. The editor scrolls
+            // internally instead.
             TextEditor(text: displayed)
-                .font(.body.monospaced())
-                .frame(minHeight: 120)
+                .font(.callout.monospaced())
+                .frame(height: 150)
                 .scrollContentBackground(.hidden)
             Text(L10n.t(hintKey))
                 .font(.caption).foregroundStyle(.secondary)
