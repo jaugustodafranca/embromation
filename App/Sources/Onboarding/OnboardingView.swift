@@ -82,7 +82,7 @@ struct OnboardingView: View {
         demoText = ""
         let request = TranslationRequest(text: Self.demoSentence,
                                          source: .english, target: settings.data.pair.primary,
-                                         tone: .neutral, customInstructions: "", glossary: [])
+                                         glossary: [])
         Task {
             do {
                 for try await chunk in translator.translate(request) { demoText += chunk }

@@ -18,6 +18,7 @@ final class PopupModel: ObservableObject {
     @Published var sourceCode = ""
     @Published var target: Language = .portuguese
     @Published var isCorrection = false
+    @Published var engineBadge = ""
 
     // Wired by the coordinator:
     var onRetarget: ((Language) -> Void)?

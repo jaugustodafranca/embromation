@@ -18,6 +18,8 @@
 "popup.retry" = "Tentar de novo";
 "popup.empty_response" = "O modelo retornou uma resposta vazia. Tente de novo.";
 "popup.esc" = "esc fecha";
+"popup.engine_apple" = "Apple Intelligence";
+"popup.apple_guardrail" = "O Apple Intelligence recusou este texto (o filtro de conteúdo dele é cauteloso demais). Tente de novo ou troque para o modelo local nos Ajustes.";
 "popup.local_model" = "modelo local";
 "popup.failed_hint" = "Se isso continuar acontecendo, tente o modelo mais leve nos Ajustes.";
 "popup.feedback_placeholder" = "Diga ao modelo o que melhorar…";
@@ -48,9 +50,6 @@
 "settings.secondary" = "Secundário";
 "settings.language_hint" = "O idioma detectado é traduzido para o outro lado do par.";
 "settings.translation" = "Tradução";
-"settings.tone" = "Tom";
-"settings.extra_instructions" = "Instruções extras";
-"settings.extra_instructions_placeholder" = "ex.: trabalho com tecnologia, então mantenha os termos de programação em inglês.";
 "settings.glossary" = "Nunca traduzir estes termos";
 "settings.add_term" = "Adicionar termo";
 "settings.add" = "Adicionar";
@@ -62,7 +61,6 @@
 "settings.correction_popup" = "Mostrar popup";
 "settings.correction_direct" = "Substituir direto";
 "settings.correction_hint" = "Substituir direto cola o texto corrigido por cima da seleção sem mostrar o popup. Erros sempre abrem o popup.";
-"settings.correction_tone" = "Tom";
 "settings.engine" = "Motor";
 "settings.engine_local" = "Modelo local (baixado)";
 "settings.engine_apple" = "Apple Intelligence (sem download)";
@@ -85,8 +83,23 @@
 "settings.tab_correction" = "Correção";
 "settings.tab_glossary" = "Glossário";
 "settings.tab_model" = "Modelo";
-"settings.tone_keep" = "Manter o tom original";
-"settings.tone_neutral" = "Neutro";
-"settings.tone_formal" = "Formal";
-"settings.tone_casual" = "Casual";
-"settings.correction_instructions_placeholder" = "ex.: mantenha meu tom informal e as minhas gírias.";
+
+/* Prompt editing */
+"settings.prompt" = "Prompt";
+"settings.prompt_restore" = "Restaurar prompt padrão";
+"settings.prompt_hint_translation" = "As instruções base enviadas ao modelo. {source} e {target} são substituídos pelo par de idiomas. O glossário é sempre acrescentado.";
+"settings.prompt_hint_correction" = "As instruções base enviadas ao modelo. {language} é substituído pelo idioma detectado. O glossário é sempre acrescentado.";
+"settings.restore_all" = "Restaurar todos os ajustes";
+"settings.restore_all_hint" = "Restaura idiomas, tons, instruções, glossário, prompts, motor e modelo. Modelos baixados permanecem no disco.";
+"settings.restore_all_confirm_title" = "Restaurar todos os ajustes?";
+"settings.restore_all_confirm" = "Restaurar padrões";
+"settings.restore_all_confirm_message" = "Todos os ajustes voltam ao valor original. Isso não pode ser desfeito.";
+
+/* About */
+"settings.tab_about" = "Sobre";
+"about.app" = "App";
+"about.version" = "Versão";
+"about.engine" = "Motor ativo";
+"about.website" = "Repositório no GitHub";
+"about.releases" = "Releases e changelog";
+"about.tagline" = "Do bom e velho embromar: a arte de enrolar no inglês. Tudo roda no seu Mac — sem conta e sem API key.";

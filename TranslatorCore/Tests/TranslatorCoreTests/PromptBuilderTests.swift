@@ -6,58 +6,48 @@ final class PromptBuilderTests: XCTestCase {
 
     func testMentionsSourceAndTargetLanguages() {
         let p = builder.systemPrompt(source: .english, target: .portuguese,
-                                     tone: .neutral, customInstructions: "", glossary: [])
+                                     glossary: [])
         XCTAssertTrue(p.contains("English"))
         XCTAssertTrue(p.contains("Brazilian Portuguese"))
     }
 
-    func testIncludesToneClause() {
-        let p = builder.systemPrompt(source: .english, target: .portuguese,
-                                     tone: .formal, customInstructions: "", glossary: [])
-        XCTAssertTrue(p.contains(Tone.formal.promptClause))
+    func testKeepsWritersToneByDefault() {
+        // Tone pickers are gone: the default templates promise to keep the
+        // writer's own tone, and users who want a fixed register edit the
+        // prompt directly.
+        let p = builder.systemPrompt(source: .english, target: .portuguese, glossary: [])
+        XCTAssertTrue(p.contains("Keep the writer's tone and level of formality."))
     }
 
     func testGlossaryTermsAreListedAndOmittedWhenEmpty() {
         let with = builder.systemPrompt(source: .english, target: .portuguese,
-                                        tone: .neutral, customInstructions: "",
                                         glossary: ["deploy", "pipeline"])
         XCTAssertTrue(with.contains("deploy, pipeline"))
         let without = builder.systemPrompt(source: .english, target: .portuguese,
-                                           tone: .neutral, customInstructions: "", glossary: [])
+                                           glossary: [])
         XCTAssertFalse(without.contains("never translate"))
-    }
-
-    func testCustomInstructionsAreTrimmedAndIncluded() {
-        let p = builder.systemPrompt(source: .english, target: .portuguese,
-                                     tone: .neutral, customInstructions: "  Keep tech terms.  ",
-                                     glossary: [])
-        XCTAssertTrue(p.contains("Keep tech terms."))
-        XCTAssertFalse(p.contains("  Keep tech terms.  "))
     }
 
     func testDemandsSymbolAndEmojiPreservation() {
         let p = builder.systemPrompt(source: .english, target: .portuguese,
-                                     tone: .neutral, customInstructions: "", glossary: [])
+                                     glossary: [])
         XCTAssertTrue(p.contains("Preserve emoji"))
         XCTAssertTrue(p.contains("keyboard shortcuts"))
     }
 
     func testDemandsTranslationOnlyOutput() {
         let p = builder.systemPrompt(source: .english, target: .portuguese,
-                                     tone: .neutral, customInstructions: "", glossary: [])
+                                     glossary: [])
         XCTAssertTrue(p.contains("ONLY the translated text"))
     }
 }
 
 extension PromptBuilderTests {
     private func request(mode: TranslationMode,
-                         refinement: Refinement? = nil,
-                         correctionTone: CorrectionTone = .keep) -> TranslationRequest {
+                         refinement: Refinement? = nil) -> TranslationRequest {
         TranslationRequest(text: "Hey team, the deploy is done.",
                            source: .english, target: .portuguese,
-                           tone: .formal, customInstructions: "Keep tech terms.",
-                           glossary: ["deploy"], mode: mode, refinement: refinement,
-                           correctionTone: correctionTone)
+                           glossary: ["deploy"], mode: mode, refinement: refinement)
     }
 
     func testMessagesWithoutRefinementSendTheRawTextAsTheUserTurn() {
@@ -101,42 +91,26 @@ extension PromptBuilderTests {
         XCTAssertFalse(system.contains("Brazilian Portuguese"))
     }
 
-    func testRefinementSystemPromptKeepsToneCustomAndGlossaryClauses() {
+    func testRefinementSystemPromptKeepsGlossaryClause() {
         let refinement = Refinement(previousOutput: "prev", feedback: "shorter")
         let system = builder.messages(for: request(mode: .translate, refinement: refinement))[0].content
-        XCTAssertTrue(system.contains(Tone.formal.promptClause))
-        XCTAssertTrue(system.contains("Keep tech terms."))
         XCTAssertTrue(system.contains("deploy"))
     }
 
     func testPlainModesKeepTheirDedicatedSystemPrompts() {
         let translate = builder.messages(for: request(mode: .translate))[0].content
         XCTAssertEqual(translate, builder.systemPrompt(source: .english, target: .portuguese,
-                                                       tone: .formal,
-                                                       customInstructions: "Keep tech terms.",
                                                        glossary: ["deploy"]))
         let correct = builder.messages(for: request(mode: .correct))[0].content
-        XCTAssertEqual(correct, builder.correctionPrompt(language: .english, correctionTone: .keep,
-                                                         customInstructions: "Keep tech terms.",
+        XCTAssertEqual(correct, builder.correctionPrompt(language: .english,
                                                          glossary: ["deploy"]))
     }
 
-    func testCorrectionRefinementKeepAddsNoToneClause() {
+    func testRefinementAddsNoFixedToneClause() {
+        // The feedback drives the register of a refinement ("more formal");
+        // a fixed tone line would fight it.
         let refinement = Refinement(previousOutput: "prev", feedback: "more formal")
-        let system = builder.messages(for: request(mode: .correct, refinement: refinement,
-                                                    correctionTone: .keep))[0].content
-        XCTAssertFalse(system.contains(Tone.formal.promptClause))
-        XCTAssertFalse(system.contains(Tone.neutral.promptClause))
-        XCTAssertFalse(system.contains(Tone.casual.promptClause))
-    }
-
-    func testCorrectionRefinementNonKeepUsesCorrectionToneNotTranslationTone() {
-        let refinement = Refinement(previousOutput: "prev", feedback: "more formal")
-        // The shared helper's translation `tone` is .formal; correctionTone here
-        // is .casual — only the latter may surface in a .correct refinement.
-        let system = builder.messages(for: request(mode: .correct, refinement: refinement,
-                                                    correctionTone: .casual))[0].content
-        XCTAssertTrue(system.contains(Tone.casual.promptClause))
-        XCTAssertFalse(system.contains(Tone.formal.promptClause))
+        let system = builder.messages(for: request(mode: .correct, refinement: refinement))[0].content
+        XCTAssertFalse(system.contains("Keep the writer's tone"))
     }
 }
