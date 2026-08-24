@@ -18,6 +18,13 @@ public struct ChatMessage: Equatable, Sendable {
 public struct PromptBuilder: Sendable {
     public init() {}
 
+    /// Awkward-but-grammatical sentences fall outside the error checklist, so
+    /// naturalness must be named as its own category — with the meaning guard
+    /// in the same sentence, so the license to rewrite never becomes a
+    /// license to paraphrase the intent away.
+    static let naturalRewordingClause =
+        "If a sentence is awkwardly worded or unnatural, rewrite or reorder it so it reads the way a fluent native speaker would phrase it — but NEVER change the meaning: do not add information, remove information, or alter the intent of the message."
+
     public func systemPrompt(
         source: Language,
         target: Language,
@@ -47,21 +54,22 @@ public struct PromptBuilder: Sendable {
         glossary: [String]
     ) -> String {
         var lines: [String] = []
-        // .keep promises to preserve the input's tone, so no clause is forced;
-        // any other value drops that promise from the sentence instead of
-        // stating it and then contradicting it with a forced tone below.
-        let commitment = correctionTone == .keep
-            ? "keeping the same language (\(language.englishName)), meaning and tone."
-            : "keeping the same language (\(language.englishName)) and meaning."
-        lines.append("You are a proofreading engine. Fix grammar, spelling and punctuation of the user's message, \(commitment)")
+        // The commitment sentence never promises "same tone": rewording an
+        // awkward sentence (below) would read as breaking that promise. For
+        // .keep, tone preservation is its own clause, phrased so it coexists
+        // with reordering — tone is voice and formality, not word order.
+        lines.append("You are a proofreading engine. Fix grammar, spelling and punctuation of the user's message, keeping the same language (\(language.englishName)) and meaning.")
         // A generic "fix grammar" instruction is too easy for a small model to
         // satisfy by changing nothing — spelling out the concrete categories
         // makes it check specific things instead of judging the message
         // "good enough" on a skim.
         lines.append("Fix every instance of: incorrect capitalization (sentence starts, proper nouns, acronyms like API), subject-verb agreement, missing or wrong punctuation, and misspelled words — even in short, casual, or technical messages.")
+        lines.append(Self.naturalRewordingClause)
         lines.append("Preserve emoji, keyboard shortcuts (like ⌃T), code, URLs, numbers and any other symbols exactly as written — never drop or translate them.")
         if let clause = correctionTone.promptClause {
             lines.append(clause)
+        } else {
+            lines.append("Keep the writer's tone and level of formality.")
         }
         let custom = customInstructions.trimmingCharacters(in: .whitespacesAndNewlines)
         if !custom.isEmpty {
@@ -114,6 +122,7 @@ public struct PromptBuilder: Sendable {
             lines.append("You are a translation engine. The user received the previous version as a translation of the original text from \(request.source.englishName) to \(request.target.englishName) and asked for changes. Write a new \(request.target.englishName) translation of the original text that applies the user's feedback.")
         case .correct:
             lines.append("You are a proofreading engine. The user received the previous version as a corrected form of the original text and asked for changes. Write a new version of the original text — same language (\(request.source.englishName)), same meaning — that fixes grammar, spelling and punctuation and applies the user's feedback.")
+            lines.append(Self.naturalRewordingClause)
         }
         lines.append("Preserve emoji, keyboard shortcuts (like ⌃T), code, URLs, numbers and any other symbols exactly as written — never drop or translate them.")
         switch request.mode {
