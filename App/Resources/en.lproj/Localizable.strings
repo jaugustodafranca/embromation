@@ -63,6 +63,15 @@
 "settings.correction_direct" = "Replace directly";
 "settings.correction_hint" = "Replace directly pastes the corrected text over your selection without showing the popup. Errors always open the popup.";
 "settings.correction_tone" = "Tone";
+"settings.engine" = "Engine";
+"settings.engine_local" = "Local model (downloaded)";
+"settings.engine_apple" = "Apple Intelligence (no download)";
+"settings.engine_apple_ready" = "Apple Intelligence is ready — nothing to download.";
+"settings.engine_apple_not_enabled" = "Turn on Apple Intelligence in System Settings to use this engine.";
+"settings.engine_apple_not_eligible" = "This Mac doesn't support Apple Intelligence.";
+"settings.engine_apple_not_ready" = "The Apple Intelligence model is still getting ready. Try again in a bit.";
+"settings.engine_apple_unavailable" = "Apple Intelligence is unavailable right now.";
+"settings.engine_apple_requires_macos26" = "Requires macOS 26 or later.";
 "settings.model" = "Model";
 "settings.download" = "Download model";
 "settings.downloading" = "Downloading… %.0f%%";

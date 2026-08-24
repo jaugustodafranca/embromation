@@ -42,6 +42,29 @@ final class SettingsStoreTests: XCTestCase {
     }
 
     @MainActor
+    func testEngineDefaultsToMLXAndSurvivesReload() {
+        let suite = "test-\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suite)!
+        let store = SettingsStore(defaults: defaults)
+        // Existing installs must keep their behavior: the local MLX engine
+        // stays the default until the user opts into Apple Intelligence.
+        XCTAssertEqual(store.data.engine, .mlx)
+        store.data.engine = .appleIntelligence
+        store.flush()
+        let reloaded = SettingsStore(defaults: UserDefaults(suiteName: suite)!)
+        XCTAssertEqual(reloaded.data.engine, .appleIntelligence)
+    }
+
+    func testDecodingBlobWithoutEngineKeyFallsBackToMLX() throws {
+        let old = """
+        {"tone":"formal","didOnboard":true}
+        """
+        let decoded = try JSONDecoder().decode(SettingsData.self, from: Data(old.utf8))
+        XCTAssertEqual(decoded.engine, .mlx)
+        XCTAssertEqual(decoded.tone, .formal)
+    }
+
+    @MainActor
     func testCorrectionFlowDefaultsToPopup() {
         let defaults = UserDefaults(suiteName: "test-\(UUID().uuidString)")!
         let store = SettingsStore(defaults: defaults)
