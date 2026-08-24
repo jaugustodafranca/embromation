@@ -69,8 +69,6 @@ final class TranslationCoordinator {
         let detected = LanguageDetector().detect(lastCapturedText)
         let source = detected ?? settings.data.pair.secondary
         var request = TranslationRequest(text: lastCapturedText, source: source, target: language,
-                                         tone: settings.data.tone,
-                                         customInstructions: settings.data.customInstructions,
                                          glossary: settings.data.glossary,
                                          mode: .translate)
         request.translationTemplate = settings.data.translationPromptTemplate
@@ -148,15 +146,9 @@ final class TranslationCoordinator {
             source = detected ?? settings.data.pair.primary
             target = source
         }
-        let instructions = mode == .correct
-            ? settings.data.correctionInstructions
-            : settings.data.customInstructions
         var request = TranslationRequest(text: text, source: source, target: target,
-                                         tone: settings.data.tone,
-                                         customInstructions: instructions,
                                          glossary: settings.data.glossary,
-                                         mode: mode,
-                                         correctionTone: settings.data.correctionTone)
+                                         mode: mode)
         request.translationTemplate = settings.data.translationPromptTemplate
         request.correctionTemplate = settings.data.correctionPromptTemplate
         if direct {

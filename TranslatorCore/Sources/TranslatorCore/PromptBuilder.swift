@@ -49,12 +49,13 @@ public struct PromptBuilder: Sendable {
     /// The user-editable base block of each prompt (Settings › Prompt). An
     /// empty stored template means "use these defaults". Language names stay
     /// placeholders so an edited prompt keeps following the language
-    /// settings. Tone, custom instructions, glossary and the reply-only
+    /// settings. Tone, the glossary and the reply-only
     /// contract are NOT part of the template — they're appended afterwards,
     /// so editing the prompt can't silently break the rest of Settings.
     public static let defaultTranslationTemplate = """
     You are a translation engine. Translate the user's message from {source} to {target}.
     \(sourceIsContentClause(action: "translate"))
+    Keep the writer's tone and level of formality.
     \(preserveClause)
     \(formattingMirrorClause)
     """
@@ -64,6 +65,7 @@ public struct PromptBuilder: Sendable {
     \(sourceIsContentClause(action: "correct"))
     Fix every instance of: incorrect capitalization (sentence starts, proper nouns, acronyms like API), subject-verb agreement, missing or wrong punctuation, and misspelled words — even in short, casual, or technical messages.
     \(naturalRewordingClause)
+    Keep the writer's tone and level of formality.
     \(preserveClause)
     \(formattingMirrorClause)
     """
@@ -71,8 +73,6 @@ public struct PromptBuilder: Sendable {
     public func systemPrompt(
         source: Language,
         target: Language,
-        tone: Tone,
-        customInstructions: String,
         glossary: [String],
         template: String = ""
     ) -> String {
@@ -82,11 +82,6 @@ public struct PromptBuilder: Sendable {
         lines.append(base
             .replacingOccurrences(of: "{source}", with: source.englishName)
             .replacingOccurrences(of: "{target}", with: target.englishName))
-        lines.append(tone.promptClause)
-        let custom = customInstructions.trimmingCharacters(in: .whitespacesAndNewlines)
-        if !custom.isEmpty {
-            lines.append(custom)
-        }
         if !glossary.isEmpty {
             lines.append("Keep these terms exactly as written, never translate them: \(glossary.joined(separator: ", ")).")
         }
@@ -96,29 +91,13 @@ public struct PromptBuilder: Sendable {
 
     public func correctionPrompt(
         language: Language,
-        correctionTone: CorrectionTone,
-        customInstructions: String,
         glossary: [String],
         template: String = ""
     ) -> String {
         var lines: [String] = []
-        // The default template's commitment sentence never promises "same
-        // tone": rewording an awkward sentence would read as breaking that
-        // promise. For .keep, tone preservation is its own clause below,
-        // phrased so it coexists with reordering — tone is voice and
-        // formality, not word order.
         let trimmed = template.trimmingCharacters(in: .whitespacesAndNewlines)
         let base = trimmed.isEmpty ? Self.defaultCorrectionTemplate : trimmed
         lines.append(base.replacingOccurrences(of: "{language}", with: language.englishName))
-        if let clause = correctionTone.promptClause {
-            lines.append(clause)
-        } else {
-            lines.append("Keep the writer's tone and level of formality.")
-        }
-        let custom = customInstructions.trimmingCharacters(in: .whitespacesAndNewlines)
-        if !custom.isEmpty {
-            lines.append(custom)
-        }
         if !glossary.isEmpty {
             lines.append("Keep these terms exactly as written, never translate them: \(glossary.joined(separator: ", ")).")
         }
@@ -137,13 +116,10 @@ public struct PromptBuilder: Sendable {
             switch request.mode {
             case .translate:
                 system = systemPrompt(source: request.source, target: request.target,
-                                      tone: request.tone,
-                                      customInstructions: request.customInstructions,
                                       glossary: request.glossary,
                                       template: request.translationTemplate)
             case .correct:
-                system = correctionPrompt(language: request.source, correctionTone: request.correctionTone,
-                                          customInstructions: request.customInstructions,
+                system = correctionPrompt(language: request.source,
                                           glossary: request.glossary,
                                           template: request.correctionTemplate)
             }
@@ -174,20 +150,8 @@ public struct PromptBuilder: Sendable {
         }
         lines.append("Preserve emoji, keyboard shortcuts (like ⌃T), code and code identifiers (like bookingId or user_id), URLs, numbers and any other symbols exactly as written — never drop or translate them.")
         lines.append(Self.formattingMirrorClause)
-        switch request.mode {
-        case .translate:
-            lines.append(request.tone.promptClause)
-        case .correct:
-            // Correction has its own tone, decoupled from the translation
-            // tone above — .keep forces nothing (see correctionPrompt).
-            if let clause = request.correctionTone.promptClause {
-                lines.append(clause)
-            }
-        }
-        let custom = request.customInstructions.trimmingCharacters(in: .whitespacesAndNewlines)
-        if !custom.isEmpty {
-            lines.append(custom)
-        }
+        // No tone clause here: the user's feedback drives the register of a
+        // refinement (e.g. "more formal") — a fixed tone line would fight it.
         if !request.glossary.isEmpty {
             lines.append("Keep these terms exactly as written, never translate them: \(request.glossary.joined(separator: ", ")).")
         }

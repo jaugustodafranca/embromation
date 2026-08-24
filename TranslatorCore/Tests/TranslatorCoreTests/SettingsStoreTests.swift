@@ -7,14 +7,12 @@ final class SettingsStoreTests: XCTestCase {
         let defaults = UserDefaults(suiteName: "test-\(UUID().uuidString)")!
         let store = SettingsStore(defaults: defaults)
         XCTAssertEqual(store.data.pair, LanguagePair(primary: .portuguese, secondary: .english))
-        XCTAssertEqual(store.data.tone, .neutral)
         XCTAssertEqual(store.data.glossary, [])
         // RAM-aware default: whatever this host reports, a fresh store must
         // match the pure recommendation function, not a fixed model.
         XCTAssertEqual(store.data.selectedModelID, ModelCatalog.recommended().id)
         XCTAssertEqual(store.data.unloadAfterMinutes, 10)
         XCTAssertFalse(store.data.didOnboard)
-        XCTAssertEqual(store.data.correctionTone, .keep)
     }
 
     /// Proves the fresh-install default is wired to the RAM-aware
@@ -30,13 +28,11 @@ final class SettingsStoreTests: XCTestCase {
         let suite = "test-\(UUID().uuidString)"
         let defaults = UserDefaults(suiteName: suite)!
         let store = SettingsStore(defaults: defaults)
-        store.data.tone = .formal
         store.data.glossary = ["deploy", "commit"]
         store.data.didOnboard = true
         store.flush()
 
         let reloaded = SettingsStore(defaults: UserDefaults(suiteName: suite)!)
-        XCTAssertEqual(reloaded.data.tone, .formal)
         XCTAssertEqual(reloaded.data.glossary, ["deploy", "commit"])
         XCTAssertTrue(reloaded.data.didOnboard)
     }
@@ -61,7 +57,7 @@ final class SettingsStoreTests: XCTestCase {
         """
         let decoded = try JSONDecoder().decode(SettingsData.self, from: Data(old.utf8))
         XCTAssertEqual(decoded.engine, .mlx)
-        XCTAssertEqual(decoded.tone, .formal)
+        XCTAssertTrue(decoded.didOnboard)
     }
 
     @MainActor
@@ -83,13 +79,11 @@ final class SettingsStoreTests: XCTestCase {
     func testRestoreDefaultsResetsEverythingButOnboarding() {
         let defaults = UserDefaults(suiteName: "test-\(UUID().uuidString)")!
         let store = SettingsStore(defaults: defaults)
-        store.data.tone = .formal
         store.data.glossary = ["deploy"]
         store.data.translationPromptTemplate = "custom"
         store.data.engine = .appleIntelligence
         store.data.didOnboard = true
         store.restoreDefaults()
-        XCTAssertEqual(store.data.tone, .neutral)
         XCTAssertEqual(store.data.glossary, [])
         XCTAssertEqual(store.data.translationPromptTemplate, "")
         XCTAssertEqual(store.data.engine, .mlx)
@@ -110,34 +104,30 @@ final class SettingsStoreTests: XCTestCase {
         {"pair":{"primary":{"code":"pt","englishName":"Brazilian Portuguese"},"secondary":{"code":"en","englishName":"English"}},"tone":"formal","customInstructions":"tech","glossary":["deploy"],"selectedModelID":"mlx-community/Qwen3-4B-4bit","unloadAfterMinutes":5,"didOnboard":true}
         """
         let decoded = try JSONDecoder().decode(SettingsData.self, from: Data(old.utf8))
-        XCTAssertEqual(decoded.tone, .formal)
         XCTAssertEqual(decoded.glossary, ["deploy"])
         XCTAssertEqual(decoded.unloadAfterMinutes, 5)
         XCTAssertTrue(decoded.didOnboard)
         XCTAssertFalse(decoded.correctionReplacesDirectly)
-        XCTAssertEqual(decoded.correctionInstructions, "")
     }
 
-    func testDecodingBlobWithoutCorrectionToneDefaultsToKeep() throws {
-        // Blob shape persisted before this feature (no correctionTone key), but
-        // otherwise up to date — includes correctionReplacesDirectly.
+    func testDecodingBlobWithRetiredKeysStillDecodes() throws {
+        // Blobs persisted before tone/instructions were retired still carry
+        // those keys — they must be ignored, not break decoding.
         let old = """
-        {"pair":{"primary":{"code":"pt","englishName":"Brazilian Portuguese"},"secondary":{"code":"en","englishName":"English"}},"tone":"formal","customInstructions":"tech","correctionInstructions":"","glossary":["deploy"],"selectedModelID":"mlx-community/Qwen3-4B-4bit","unloadAfterMinutes":5,"didOnboard":true,"correctionReplacesDirectly":true}
+        {"pair":{"primary":{"code":"pt","englishName":"Brazilian Portuguese"},"secondary":{"code":"en","englishName":"English"}},"tone":"formal","customInstructions":"tech","correctionInstructions":"","correctionTone":"casual","glossary":["deploy"],"selectedModelID":"mlx-community/Qwen3-4B-4bit","unloadAfterMinutes":5,"didOnboard":true,"correctionReplacesDirectly":true}
         """
         let decoded = try JSONDecoder().decode(SettingsData.self, from: Data(old.utf8))
-        XCTAssertEqual(decoded.correctionTone, .keep)
-        // Sibling fields from the previous migration still decode correctly.
-        XCTAssertEqual(decoded.tone, .formal)
         XCTAssertTrue(decoded.correctionReplacesDirectly)
+        XCTAssertEqual(decoded.glossary, ["deploy"])
     }
 
     @MainActor
     func testDebouncedPersistLandsWithoutExplicitFlush() async {
         let suite = "test-\(UUID().uuidString)"
         let store = SettingsStore(defaults: UserDefaults(suiteName: suite)!)
-        store.data.tone = .casual
+        store.data.glossary = ["deploy"]
         try? await Task.sleep(for: .milliseconds(600))
         let reloaded = SettingsStore(defaults: UserDefaults(suiteName: suite)!)
-        XCTAssertEqual(reloaded.data.tone, .casual)
+        XCTAssertEqual(reloaded.data.glossary, ["deploy"])
     }
 }

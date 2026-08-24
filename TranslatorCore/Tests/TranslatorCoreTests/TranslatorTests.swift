@@ -6,7 +6,7 @@ final class TranslatorTests: XCTestCase {
         let fake = FakeTranslator(canned: "O livro está sobre a mesa.")
         let request = TranslationRequest(text: "The book is on the table.",
                                          source: .english, target: .portuguese,
-                                         tone: .neutral, customInstructions: "", glossary: [])
+                                         glossary: [])
         var chunks: [String] = []
         for try await chunk in fake.translate(request) {
             chunks.append(chunk)

@@ -6,14 +6,13 @@ final class CorrectionTests: XCTestCase {
 
     func testRequestDefaultsKeepBackwardCompatibility() {
         let request = TranslationRequest(text: "Oi", source: .portuguese, target: .english,
-                                         tone: .neutral, customInstructions: "", glossary: [])
+                                         glossary: [])
         XCTAssertEqual(request.mode, .translate)
         XCTAssertNil(request.refinement)
     }
 
     func testCorrectionPromptKeepsSameLanguageAndDemandsCorrectedTextOnly() {
-        let p = builder.correctionPrompt(language: .portuguese, correctionTone: .keep,
-                                         customInstructions: "", glossary: [])
+        let p = builder.correctionPrompt(language: .portuguese, glossary: [])
         XCTAssertTrue(p.contains("proofreading"))
         XCTAssertTrue(p.contains("same language"))
         XCTAssertTrue(p.contains("Brazilian Portuguese"))
@@ -21,34 +20,20 @@ final class CorrectionTests: XCTestCase {
         XCTAssertTrue(p.contains("ONLY the corrected text"))
     }
 
-    func testCorrectionPromptCarriesToneCustomAndGlossary() {
-        let p = builder.correctionPrompt(language: .english, correctionTone: .casual,
-                                         customInstructions: "Keep it short.",
-                                         glossary: ["deploy"])
-        XCTAssertTrue(p.contains(Tone.casual.promptClause))
-        XCTAssertTrue(p.contains("Keep it short."))
+    func testCorrectionPromptCarriesGlossary() {
+        let p = builder.correctionPrompt(language: .english, glossary: ["deploy"])
         XCTAssertTrue(p.contains("deploy"))
     }
 
-    func testCorrectionPromptKeepPreservesOriginalToneAndAddsNoClause() {
-        // .keep must not promise "same tone" in the commitment sentence —
-        // rewording an awkward sentence would read as breaking that promise.
-        // Tone preservation lives in its own clause, phrased to coexist
+    func testCorrectionPromptPreservesWritersTone() {
+        // The commitment sentence never promises "same tone" — rewording an
+        // awkward sentence would read as breaking that promise. Tone
+        // preservation lives in its own template line, phrased to coexist
         // with reordering (tone ≠ word order).
-        let p = builder.correctionPrompt(language: .english, correctionTone: .keep,
-                                         customInstructions: "", glossary: [])
+        let p = builder.correctionPrompt(language: .english, glossary: [])
         XCTAssertTrue(p.contains("keeping the same language (English) and meaning."))
         XCTAssertFalse(p.contains("meaning and tone."))
         XCTAssertTrue(p.contains("Keep the writer's tone and level of formality."))
-        XCTAssertFalse(p.contains(Tone.neutral.promptClause))
-        XCTAssertFalse(p.contains(Tone.formal.promptClause))
-        XCTAssertFalse(p.contains(Tone.casual.promptClause))
-    }
-
-    func testCorrectionPromptNonKeepOmitsTonePreservationClause() {
-        let p = builder.correctionPrompt(language: .english, correctionTone: .formal,
-                                         customInstructions: "", glossary: [])
-        XCTAssertFalse(p.contains("Keep the writer's tone and level of formality."))
     }
 
     func testCorrectionPromptAsksForNaturalRewordingWithMeaningGuard() {
@@ -56,8 +41,7 @@ final class CorrectionTests: XCTestCase {
         // so naturalness must be its own category — with the meaning guard in
         // the same sentence so the license to rewrite never becomes a license
         // to paraphrase the intent away.
-        let p = builder.correctionPrompt(language: .english, correctionTone: .keep,
-                                         customInstructions: "", glossary: [])
+        let p = builder.correctionPrompt(language: .english, glossary: [])
         XCTAssertTrue(p.contains("rewrite or reorder it"))
         XCTAssertTrue(p.contains("fluent native speaker"))
         XCTAssertTrue(p.contains("NEVER change the meaning"))
@@ -66,7 +50,7 @@ final class CorrectionTests: XCTestCase {
 
     func testCorrectionRefinementPromptAsksForNaturalRewording() {
         var request = TranslationRequest(text: "texto", source: .english, target: .english,
-                                         tone: .neutral, customInstructions: "", glossary: [])
+                                         glossary: [])
         request.mode = .correct
         request.refinement = Refinement(previousOutput: "Texto.", feedback: "mais natural")
         let system = builder.messages(for: request).first { $0.role == .system }
@@ -75,20 +59,11 @@ final class CorrectionTests: XCTestCase {
         XCTAssertTrue(system?.content.contains("NEVER change the meaning") ?? false)
     }
 
-    func testCorrectionPromptNonKeepDropsToneWordFromLineAndAppendsMatchingClause() {
-        let p = builder.correctionPrompt(language: .english, correctionTone: .formal,
-                                         customInstructions: "", glossary: [])
-        XCTAssertTrue(p.contains("keeping the same language (English) and meaning."))
-        XCTAssertFalse(p.contains("meaning and tone."))
-        XCTAssertTrue(p.contains(Tone.formal.promptClause))
-    }
-
     func testCorrectionPromptListsConcreteErrorCategories() {
         // Small on-device models are more likely to actually apply a fix
         // when told exactly what to look for instead of a generic
         // "fix grammar" instruction — regression test for that checklist.
-        let p = builder.correctionPrompt(language: .english, correctionTone: .keep,
-                                         customInstructions: "", glossary: [])
+        let p = builder.correctionPrompt(language: .english, glossary: [])
         XCTAssertTrue(p.contains("capitalization"))
         XCTAssertTrue(p.contains("subject-verb agreement"))
         XCTAssertTrue(p.contains("punctuation"))
@@ -102,14 +77,13 @@ final class CorrectionTests: XCTestCase {
         // prompt pins the output to the input's own formatting symbols:
         // reuse what's there, never convert, never introduce new ones.
         let clause = "never introduce formatting symbols the message does not already contain"
-        let correction = builder.correctionPrompt(language: .english, correctionTone: .keep,
-                                                  customInstructions: "", glossary: [])
+        let correction = builder.correctionPrompt(language: .english, glossary: [])
         XCTAssertTrue(correction.contains(clause))
         let translation = builder.systemPrompt(source: .english, target: .portuguese,
-                                               tone: .neutral, customInstructions: "", glossary: [])
+                                               glossary: [])
         XCTAssertTrue(translation.contains(clause))
         var refinement = TranslationRequest(text: "texto", source: .english, target: .english,
-                                            tone: .neutral, customInstructions: "", glossary: [])
+                                            glossary: [])
         refinement.mode = .correct
         refinement.refinement = Refinement(previousOutput: "Texto.", feedback: "melhor")
         let system = builder.messages(for: refinement).first { $0.role == .system }
@@ -122,15 +96,14 @@ final class CorrectionTests: XCTestCase {
         // instead of translating it. Both modes must pin the user turn as
         // content to process, never a question/command aimed at the model.
         let translation = builder.systemPrompt(source: .english, target: .portuguese,
-                                               tone: .neutral, customInstructions: "", glossary: [])
+                                               glossary: [])
         XCTAssertTrue(translation.contains("never a question for you to answer"))
         XCTAssertTrue(translation.contains("translate it exactly as written"))
-        let correction = builder.correctionPrompt(language: .english, correctionTone: .keep,
-                                                  customInstructions: "", glossary: [])
+        let correction = builder.correctionPrompt(language: .english, glossary: [])
         XCTAssertTrue(correction.contains("never a question for you to answer"))
 
         var refine = TranslationRequest(text: "is it done?", source: .english, target: .portuguese,
-                                        tone: .neutral, customInstructions: "", glossary: [])
+                                        glossary: [])
         refine.refinement = Refinement(previousOutput: "Está pronto?", feedback: "mais formal")
         let system = builder.messages(for: refine).first { $0.role == .system }
         XCTAssertTrue(system?.content.contains("never a question for you to answer") ?? false)
@@ -141,16 +114,15 @@ final class CorrectionTests: XCTestCase {
         // "code" in the preserve list wasn't enough for the model to
         // recognize camelCase/snake_case identifiers as code.
         let p = builder.systemPrompt(source: .english, target: .portuguese,
-                                     tone: .neutral, customInstructions: "", glossary: [])
+                                     glossary: [])
         XCTAssertTrue(p.contains("code identifiers (like bookingId or user_id)"))
-        let c = builder.correctionPrompt(language: .english, correctionTone: .keep,
-                                         customInstructions: "", glossary: [])
+        let c = builder.correctionPrompt(language: .english, glossary: [])
         XCTAssertTrue(c.contains("code identifiers (like bookingId or user_id)"))
     }
 
     func testTranslationPromptUnchangedRegression() {
         let p = builder.systemPrompt(source: .english, target: .portuguese,
-                                     tone: .neutral, customInstructions: "", glossary: [])
+                                     glossary: [])
         XCTAssertTrue(p.contains("translation engine"))
         XCTAssertTrue(p.contains("ONLY the translated text"))
     }
@@ -158,7 +130,7 @@ final class CorrectionTests: XCTestCase {
     func testFakeTranslatorEchoesFeedbackWhenRefining() async throws {
         let fake = FakeTranslator(canned: "Texto corrigido.")
         var request = TranslationRequest(text: "texto", source: .portuguese, target: .portuguese,
-                                         tone: .neutral, customInstructions: "", glossary: [])
+                                         glossary: [])
         request.mode = .correct
         request.refinement = Refinement(previousOutput: "Texto corrigido.", feedback: "mais casual")
         var output = ""

@@ -8,10 +8,4 @@ final class LanguageTests: XCTestCase {
         XCTAssertEqual(Language.portuguese.englishName, "Brazilian Portuguese")
         XCTAssertTrue(Language.all.contains(.english))
     }
-
-    func testToneClausesAreNonEmptyAndDistinct() {
-        let clauses = Tone.allCases.map(\.promptClause)
-        XCTAssertEqual(Set(clauses).count, Tone.allCases.count)
-        XCTAssertFalse(clauses.contains(where: \.isEmpty))
-    }
 }
