@@ -18,6 +18,8 @@
 "popup.retry" = "Try again";
 "popup.empty_response" = "The model returned an empty response. Try again.";
 "popup.esc" = "esc closes";
+"popup.engine_apple" = "Apple Intelligence";
+"popup.apple_guardrail" = "Apple Intelligence declined this text (its content filter is overly cautious). Try again, or switch to the local model in Settings.";
 "popup.local_model" = "local model";
 "popup.failed_hint" = "If this keeps happening, try the lighter model in Settings.";
 "popup.feedback_placeholder" = "Tell the model what to improve…";

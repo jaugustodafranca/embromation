@@ -53,6 +53,13 @@ struct AppleEngineUnavailableError: LocalizedError {
     var errorDescription: String? { message }
 }
 
+/// Apple Intelligence's system guardrails declined the text. The filter is
+/// notoriously over-sensitive (it refuses ordinary work messages), so the
+/// coordinator treats this as retriable on the local MLX engine.
+struct AppleGuardrailError: LocalizedError {
+    var errorDescription: String? { L10n.t("popup.apple_guardrail") }
+}
+
 #if canImport(FoundationModels)
 @available(macOS 26.0, *)
 struct AppleFMTranslator: StreamingTranslator {
@@ -99,12 +106,22 @@ struct AppleFMTranslator: StreamingTranslator {
         // FoundationModels streams cumulative snapshots; the protocol
         // promises incremental chunks — CumulativeStreamDelta converts.
         var delta = CumulativeStreamDelta()
-        let stream = session.streamResponse(to: prompt, options: options)
-        for try await snapshot in stream {
-            try Task.checkCancellation()
-            if let chunk = delta.consume(snapshot.content) {
-                yield(chunk)
+        do {
+            let stream = session.streamResponse(to: prompt, options: options)
+            for try await snapshot in stream {
+                try Task.checkCancellation()
+                if let chunk = delta.consume(snapshot.content) {
+                    yield(chunk)
+                }
             }
+        } catch let error as LanguageModelSession.GenerationError {
+            // Surface guardrail refusals as a typed, retriable error — the
+            // raw description ("Detected content likely to be unsafe") reads
+            // as an accusation on perfectly ordinary work messages.
+            if case .guardrailViolation = error {
+                throw AppleGuardrailError()
+            }
+            throw error
         }
     }
 }

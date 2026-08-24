@@ -26,6 +26,10 @@ public struct TranslationRequest: Equatable, Sendable {
     /// defaults. Carried on the request so PromptBuilder stays pure.
     public var translationTemplate: String = ""
     public var correctionTemplate: String = ""
+    /// Forces a specific engine for this request regardless of the persisted
+    /// preference — set by the coordinator when it retries a request after
+    /// Apple Intelligence's guardrails decline the text.
+    public var engineOverride: TranslationEngine?
 
     public init(text: String, source: Language, target: Language,
                 glossary: [String],

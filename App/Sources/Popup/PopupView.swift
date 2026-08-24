@@ -57,7 +57,7 @@ struct PopupView: View {
                     .background(Capsule().fill(.tint.opacity(0.15)))
             }
             Spacer()
-            Text(L10n.t("popup.local_model"))
+            Text(model.engineBadge.isEmpty ? L10n.t("popup.local_model") : model.engineBadge)
                 .font(.caption2)
                 .foregroundStyle(.secondary)
         }

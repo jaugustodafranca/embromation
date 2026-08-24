@@ -18,6 +18,8 @@
 "popup.retry" = "Tentar de novo";
 "popup.empty_response" = "O modelo retornou uma resposta vazia. Tente de novo.";
 "popup.esc" = "esc fecha";
+"popup.engine_apple" = "Apple Intelligence";
+"popup.apple_guardrail" = "O Apple Intelligence recusou este texto (o filtro de conteúdo dele é cauteloso demais). Tente de novo ou troque para o modelo local nos Ajustes.";
 "popup.local_model" = "modelo local";
 "popup.failed_hint" = "Se isso continuar acontecendo, tente o modelo mais leve nos Ajustes.";
 "popup.feedback_placeholder" = "Diga ao modelo o que melhorar…";

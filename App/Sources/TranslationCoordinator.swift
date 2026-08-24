@@ -158,9 +158,29 @@ final class TranslationCoordinator {
         }
     }
 
+    /// The engine this request will actually hit, for the popup badge and
+    /// the guardrail-fallback decision.
+    private func effectiveEngine(for request: TranslationRequest) -> TranslationEngine {
+        guard AppleIntelligenceEngine.isSupported else { return .mlx }
+        return request.engineOverride ?? settings.data.engine
+    }
+
+    /// Apple Intelligence's guardrails refuse ordinary work messages. When
+    /// that happens and the local model is on disk, retry there instead of
+    /// showing the user a scary refusal for an innocuous sentence.
+    private func guardrailFallback(for request: TranslationRequest) -> TranslationRequest? {
+        guard effectiveEngine(for: request) == .appleIntelligence,
+              modelStore.state == .ready else { return nil }
+        var retry = request
+        retry.engineOverride = .mlx
+        return retry
+    }
+
     private func stream(_ request: TranslationRequest) async {
         guard !Task.isCancelled else { return }
         lastRequest = request
+        popup.model.engineBadge = L10n.t(effectiveEngine(for: request) == .appleIntelligence
+                                         ? "popup.engine_apple" : "popup.local_model")
         popup.model.isCorrection = (request.mode == .correct)
         popup.model.sourceCode = request.source.code
         popup.model.target = request.target
@@ -190,6 +210,10 @@ final class TranslationCoordinator {
         } catch is CancellationError {
             // dismissed or superseded — nothing to do
         } catch {
+            if error is AppleGuardrailError, let retry = guardrailFallback(for: request) {
+                await stream(retry)
+                return
+            }
             popup.model.phase = .failed(error.localizedDescription)
         }
     }
@@ -204,6 +228,10 @@ final class TranslationCoordinator {
         } catch is CancellationError {
             return
         } catch {
+            if error is AppleGuardrailError, let retry = guardrailFallback(for: request) {
+                await directCorrect(retry)
+                return
+            }
             popup.model.isCorrection = true
             popup.model.sourceCode = request.source.code
             popup.model.phase = .failed(error.localizedDescription)
