@@ -135,6 +135,19 @@ final class CorrectionTests: XCTestCase {
         XCTAssertTrue(t.contains(keepWords))
     }
 
+    func testCorrectionPromptTeachesByExample() {
+        // Rule-stacking hit its ceiling: with every clause in place, the
+        // model still left "seding" unfixed, dropped "So" and flattened a
+        // question into a statement. Small models learn far more from
+        // concrete input→output examples than from more rules — the
+        // reported failure is the canonical example.
+        let p = builder.correctionPrompt(language: .english, glossary: [])
+        XCTAssertTrue(p.contains("So the field model that I'm seding in the request isnot beign used?"))
+        XCTAssertTrue(p.contains("So the field model that I'm sending in the request is not being used?"))
+        // An already-clean sentence must come back unchanged.
+        XCTAssertTrue(p.contains("Can we move the meeting to tomorrow?"))
+    }
+
     func testTranslationPromptUnchangedRegression() {
         let p = builder.systemPrompt(source: .english, target: .portuguese,
                                      glossary: [])

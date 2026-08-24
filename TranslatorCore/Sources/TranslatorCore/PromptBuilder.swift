@@ -68,6 +68,11 @@ public struct PromptBuilder: Sendable {
     \(formattingMirrorClause)
     """
 
+    // The examples teach what the rules alone couldn't: with every clause
+    // in place, a 3-4B model still left typos unfixed, dropped leading
+    // words and flattened questions into statements. Few-shot pairs (the
+    // first one is a real reported failure) anchor the behavior; the last
+    // shows that clean text comes back untouched.
     public static let defaultCorrectionTemplate = """
     You are a proofreading engine. Fix grammar, spelling and punctuation of the user's message, keeping the same language ({language}) and meaning.
     \(sourceIsContentClause(action: "correct"))
@@ -77,6 +82,13 @@ public struct PromptBuilder: Sendable {
     \(completenessClause)
     \(preserveClause)
     \(formattingMirrorClause)
+    Examples:
+    Input: So the field model that I'm seding in the request isnot beign used?
+    Output: So the field model that I'm sending in the request is not being used?
+    Input: the meeting we can do it tomorrow maybe
+    Output: Maybe we can do the meeting tomorrow.
+    Input: Can we move the meeting to tomorrow?
+    Output: Can we move the meeting to tomorrow?
     """
 
     public func systemPrompt(
