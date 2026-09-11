@@ -75,6 +75,9 @@
 "settings.downloading" = "Baixando… %.0f%%";
 "settings.downloaded" = "Baixado";
 "settings.model_ram_warning" = "Precisa de %d GB de RAM; este Mac tem %d GB. Pode ficar lento.";
+"settings.model_recommended_tag" = "Recomendado";
+"settings.model_recommended_hint" = "Recomendado para este Mac: %@. Correções melhores na mesma velocidade.";
+"settings.model_use_recommended" = "Usar o modelo recomendado";
 "settings.unload_after" = "Descarregar da RAM após %d min de inatividade";
 "settings.general" = "Geral";
 "settings.launch_at_login" = "Iniciar no login";

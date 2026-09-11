@@ -19,14 +19,20 @@ public struct ModelSpec: Equatable, Identifiable, Sendable {
 /// load through MLXLLM's text-model factory — their vision-model config makes
 /// the text tower come out with mismatched tensor shapes.
 public enum ModelCatalog {
+    /// Instruct-only Qwen3 (the 2507 refresh). It has no hybrid thinking
+    /// mode, so it answers directly, and in the 2026-09-11 latency review it
+    /// corrected more error classes than the hybrid checkpoint did with or
+    /// without its reasoning pass — at the same size and speed.
+    public static let qwen3_4b_instruct = ModelSpec(id: "mlx-community/Qwen3-4B-Instruct-2507-4bit",
+                                                    displayName: "Qwen 3 4B Instruct (2507)", approxSizeGB: 2.3, minRAMGB: 16)
     public static let qwen3_4b = ModelSpec(id: "mlx-community/Qwen3-4B-4bit",
-                                           displayName: "Qwen 3 4B", approxSizeGB: 2.3, minRAMGB: 16)
+                                           displayName: "Qwen 3 4B (hybrid)", approxSizeGB: 2.3, minRAMGB: 16)
     public static let llama32_3b = ModelSpec(id: "mlx-community/Llama-3.2-3B-Instruct-4bit",
                                              displayName: "Llama 3.2 3B", approxSizeGB: 1.8, minRAMGB: 8)
     public static let qwen25_1_5b = ModelSpec(id: "mlx-community/Qwen2.5-1.5B-Instruct-4bit",
                                               displayName: "Qwen 2.5 1.5B (light)", approxSizeGB: 1.0, minRAMGB: 8)
-    public static let `default` = qwen3_4b
-    public static let all: [ModelSpec] = [qwen3_4b, llama32_3b, qwen25_1_5b]
+    public static let `default` = qwen3_4b_instruct
+    public static let all: [ModelSpec] = [qwen3_4b_instruct, qwen3_4b, llama32_3b, qwen25_1_5b]
 
     /// Unknown ids (e.g. a model removed from the catalog) fall back to the
     /// default — this is what migrates users off a retired model automatically.
@@ -45,7 +51,7 @@ public enum ModelCatalog {
     /// testable via the explicit parameter; omit it in production code to
     /// use this machine's real RAM.
     public static func recommended(forPhysicalMemoryGB gb: Double = ModelCatalog.physicalMemoryGB) -> ModelSpec {
-        if gb >= 16 { return qwen3_4b }
+        if gb >= 16 { return qwen3_4b_instruct }
         if gb >= 8 { return llama32_3b }
         return qwen25_1_5b
     }

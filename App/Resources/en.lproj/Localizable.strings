@@ -75,6 +75,9 @@
 "settings.downloading" = "Downloading… %.0f%%";
 "settings.downloaded" = "Downloaded";
 "settings.model_ram_warning" = "Needs %d GB of RAM; this Mac has %d GB. Expect slowdowns.";
+"settings.model_recommended_tag" = "Recommended";
+"settings.model_recommended_hint" = "Recommended for this Mac: %@. Better corrections at the same speed.";
+"settings.model_use_recommended" = "Use the recommended model";
 "settings.unload_after" = "Unload from RAM after %d min idle";
 "settings.general" = "General";
 "settings.launch_at_login" = "Launch at login";

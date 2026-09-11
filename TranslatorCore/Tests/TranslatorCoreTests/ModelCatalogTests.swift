@@ -3,8 +3,15 @@ import XCTest
 
 final class ModelCatalogTests: XCTestCase {
     func testRecommendsFlagshipModelAt16GBAndAbove() {
-        XCTAssertEqual(ModelCatalog.recommended(forPhysicalMemoryGB: 16), ModelCatalog.qwen3_4b)
-        XCTAssertEqual(ModelCatalog.recommended(forPhysicalMemoryGB: 64), ModelCatalog.qwen3_4b)
+        XCTAssertEqual(ModelCatalog.recommended(forPhysicalMemoryGB: 16), ModelCatalog.qwen3_4b_instruct)
+        XCTAssertEqual(ModelCatalog.recommended(forPhysicalMemoryGB: 64), ModelCatalog.qwen3_4b_instruct)
+    }
+
+    /// The hybrid checkpoint stays in the catalog so an existing selection
+    /// keeps resolving to itself instead of silently migrating to the default.
+    func testHybridQwenRemainsSelectable() {
+        XCTAssertEqual(ModelCatalog.spec(for: "mlx-community/Qwen3-4B-4bit"), ModelCatalog.qwen3_4b)
+        XCTAssertEqual(ModelCatalog.spec(for: "gone/model"), ModelCatalog.qwen3_4b_instruct)
     }
 
     func testRecommendsMidTierModelBetween8And16GB() {
