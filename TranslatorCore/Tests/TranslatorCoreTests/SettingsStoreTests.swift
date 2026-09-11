@@ -11,7 +11,7 @@ final class SettingsStoreTests: XCTestCase {
         // RAM-aware default: whatever this host reports, a fresh store must
         // match the pure recommendation function, not a fixed model.
         XCTAssertEqual(store.data.selectedModelID, ModelCatalog.recommended().id)
-        XCTAssertEqual(store.data.unloadAfterMinutes, 10)
+        XCTAssertEqual(store.data.unloadAfterMinutes, 30)
         XCTAssertFalse(store.data.didOnboard)
     }
 

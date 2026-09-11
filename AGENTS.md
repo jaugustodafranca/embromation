@@ -53,12 +53,14 @@ checklist".
   from `project.yml`.
 - `make test` — runs the core test suite (`swift test --package-path
   TranslatorCore`). No MLX involved; nothing is downloaded.
-- `make build` — `gen` then a Debug build of the `Embromation` scheme
+- `make build` — `gen` then a Release build of the `Embromation` scheme
   (`xcodebuild ... -skipMacroValidation -skipPackagePluginValidation`). Both
   flags exist because headless builds can't answer Xcode's interactive
   "Trust & Enable" prompt: `mlx-swift-lm` ships Swift macros
   (`#hubDownloader` / `#huggingFaceTokenizerLoader`) and `mlx-swift` ships a
-  build plugin (`CudaBuild`).
+  build plugin (`CudaBuild`). `make CONFIG=Debug build` produces a Debug
+  build, which generates tokens at about a third of the speed — fine for
+  debugging, not for daily use.
 - `make run` — `build` then opens the built `.app`.
 
 The first build downloads and compiles the full MLX stack, which takes
