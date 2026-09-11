@@ -9,7 +9,8 @@ struct EngineRoutingTranslator: StreamingTranslator {
     let apple: StreamingTranslator?
 
     func translate(_ request: TranslationRequest) -> AsyncThrowingStream<String, Error> {
-        if SettingsData.snapshot().engine == .appleIntelligence, let apple {
+        let engine = request.engineOverride ?? SettingsData.snapshot().engine
+        if engine == .appleIntelligence, let apple {
             return apple.translate(request)
         }
         return mlx.translate(request)
