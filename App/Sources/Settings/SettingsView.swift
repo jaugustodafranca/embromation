@@ -235,6 +235,15 @@ private struct ModelTab: View {
 
     private var selectedSpec: ModelSpec { ModelCatalog.spec(for: settings.data.selectedModelID) }
     private var physicalMemoryGB: Int { Int(ModelCatalog.physicalMemoryGB) }
+    private var recommendedSpec: ModelSpec { ModelCatalog.recommended() }
+
+    private func pickerLabel(for spec: ModelSpec) -> String {
+        var label = String(format: "%@ — %.1f GB", spec.displayName, spec.approxSizeGB)
+        if spec == recommendedSpec {
+            label += " · " + L10n.t("settings.model_recommended_tag")
+        }
+        return label
+    }
 
     var body: some View {
         Form {
@@ -270,11 +279,24 @@ private struct ModelTab: View {
             Section(L10n.t("settings.model")) {
                 Picker(L10n.t("settings.model"), selection: $settings.data.selectedModelID) {
                     ForEach(ModelCatalog.all) { spec in
-                        Text("\(spec.displayName) — \(spec.approxSizeGB, specifier: "%.1f") GB")
-                            .tag(spec.id)
+                        Text(pickerLabel(for: spec)).tag(spec.id)
                     }
                 }
                 .onChange(of: settings.data.selectedModelID) { modelStore.refresh() }
+
+                // Existing installs keep their persisted model, so the better
+                // default never applies on its own — say which one this Mac
+                // should be on and make the switch one click.
+                if selectedSpec != recommendedSpec {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Label(String(format: L10n.t("settings.model_recommended_hint"), recommendedSpec.displayName),
+                              systemImage: "sparkles")
+                            .font(.caption).foregroundStyle(.secondary)
+                        Button(L10n.t("settings.model_use_recommended")) {
+                            settings.data.selectedModelID = recommendedSpec.id
+                        }
+                    }
+                }
 
                 // Warning only — the selection itself is never blocked.
                 if selectedSpec.minRAMGB > physicalMemoryGB {

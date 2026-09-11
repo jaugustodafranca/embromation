@@ -2,7 +2,11 @@
 .PHONY: gen test build run
 
 DERIVED := .build/DerivedData
-APP := $(DERIVED)/Build/Products/Debug/Embromation.app
+# Release by default: the Debug configuration compiles the MLX C++ stack with
+# optimizations off and generates tokens at about a third of the speed, so a
+# Debug build is only useful for debugging (`make CONFIG=Debug run`).
+CONFIG ?= Release
+APP := $(DERIVED)/Build/Products/$(CONFIG)/Embromation.app
 
 gen:
 	xcodegen generate
@@ -16,7 +20,7 @@ build: gen
 	# (CudaBuild) that Xcode otherwise refuses to run without an interactive
 	# "Trust & Enable" prompt, which headless builds can't answer.
 	xcodebuild -project Embromation.xcodeproj -scheme Embromation \
-		-configuration Debug -derivedDataPath $(DERIVED) \
+		-configuration $(CONFIG) -derivedDataPath $(DERIVED) \
 		-skipMacroValidation -skipPackagePluginValidation build
 
 run: build

@@ -36,16 +36,16 @@ actor MLXTranslator: StreamingTranslator {
         let container = try await loadedContainer()
         let messages = PromptBuilder().messages(for: request)
         try await container.perform { (context: ModelContext) in
-            // enable_thinking: translation must answer directly — chain-of-
-            // thought would eat the token budget and the user's time, and
-            // there's little to reason about. Correction is the opposite: a
-            // small model asked to fix grammar in one shot tends to judge
-            // technical/casual text "fine" and change nothing, especially
-            // with code-like tokens (camelCase, @mentions) in the mix — a
-            // reasoning pass first measurably reduces that no-op behavior.
-            // Either way the filter below strips the <think> block (empty or
-            // not) before anything reaches the user.
-            let enableThinking = request.mode == .correct
+            // enable_thinking stays off in every mode. With it on, Qwen3
+            // writes 300–2 300 hidden reasoning tokens before the answer —
+            // at ~80 tok/s that is 5–30 s with nothing on screen, because
+            // ThinkBlockFilter withholds everything until </think> closes.
+            // Measured on 2026-09-11 against the v1.2.0–v1.3.0 correction
+            // path: the reasoning pass fixed one extra error class
+            // (agreement with a distant subject) on one of four inputs, at
+            // 5–13× the latency. The filter below stays as a guard in case a
+            // model emits the tags anyway.
+            let enableThinking = false
             let chat: [Chat.Message] = messages.map { message in
                 switch message.role {
                 case .system: .system(message.content)
@@ -56,29 +56,21 @@ actor MLXTranslator: StreamingTranslator {
                 input: UserInput(chat: chat, additionalContext: ["enable_thinking": enableThinking]))
             // Refinements need a higher temperature: with the previous output
             // in the chat, low temperature anchors the model into repeating
-            // it. Corrections run with thinking enabled, and Qwen3's usage
-            // guide forbids near-greedy sampling there: low temperature makes
-            // the <think> block degrade into endless repetition, which is
-            // exactly a runaway-latency bug — the model loops until it burns
-            // the whole token budget before the answer starts. 0.6/0.95 is
-            // the officially recommended thinking-mode sampling.
+            // it. Correction decodes greedily: proofreading has one right
+            // answer and the same input must yield the same fix every time
+            // (without thinking there is no repetition hazard). Translation
+            // keeps a little sampling room.
             let temperature: Float
-            let topP: Float
             if request.refinement != nil {
-                (temperature, topP) = (0.7, 1.0)
+                temperature = 0.7
             } else if request.mode == .correct {
-                (temperature, topP) = (0.6, 0.95)
+                temperature = 0.0
             } else {
-                (temperature, topP) = (0.3, 1.0)
+                temperature = 0.3
             }
-            // Thinking spends part of the budget on the reasoning trace
-            // before the answer even starts — 2048 was sized for a direct
-            // answer only. Without headroom, a long paste-correction could
-            // exhaust the budget mid-<think>, and ThinkBlockFilter withholds
-            // everything until </think> closes — the user would see an
-            // empty result instead of a slow-but-correct one.
-            let maxTokens = enableThinking ? 4096 : 2048
-            let parameters = GenerateParameters(maxTokens: maxTokens, temperature: temperature, topP: topP)
+            // Sized for a direct answer: output is at most about as long as
+            // the input, and 2048 tokens is roughly 1 500 words.
+            let parameters = GenerateParameters(maxTokens: 2048, temperature: temperature, topP: 1.0)
             let stream = try MLXLMCommon.generate(input: input, parameters: parameters, context: context)
             var filter = ThinkBlockFilter()
             for await generation in stream {

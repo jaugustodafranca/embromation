@@ -12,7 +12,10 @@ public struct SettingsData: Codable, Equatable, Sendable {
     /// PromptBuilder (which also serve as the "restore" values in Settings).
     public var translationPromptTemplate = ""
     public var correctionPromptTemplate = ""
-    public var unloadAfterMinutes = 10
+    /// Reloading the model costs ~1.5 s on the next request; 30 min keeps
+    /// it resident across a normal working session without holding ~2.5 GB
+    /// forever on an idle Mac.
+    public var unloadAfterMinutes = 30
     public var didOnboard = false
     public var correctionReplacesDirectly = false
 
