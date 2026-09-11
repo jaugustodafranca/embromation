@@ -1,5 +1,40 @@
 # Changelog
 
+## v1.4.0 (2026-09-11)
+
+### Features
+- New recommended local model: Qwen 3 4B Instruct (2507). Same size and
+  speed as the previous default, no reasoning mode, and it fixes more
+  grammar than the old model did — including subject-verb agreement and
+  missing auxiliaries ("I struggling" → "I'm struggling"). Settings marks it
+  as recommended and offers a one-click switch; existing installs keep
+  their current model until they switch.
+- Editable prompts: the translation and correction instructions are now
+  plain text you can edit in Settings, with Restore default. Tone pickers
+  and extra-instruction fields are gone — the prompt owns them now.
+- Restore all settings to defaults (General tab) and an About tab.
+- Apple Intelligence: when its guardrails decline an ordinary message, the
+  request transparently retries on the local model, and the popup names the
+  engine that served it.
+
+### Improved
+- Fix grammar is 5–30× faster. Since v1.2.0 the local model was writing
+  300–2 300 hidden reasoning tokens before every correction (up to ~30 s
+  with nothing on screen); corrections now answer directly, in 1–3 s.
+- Corrections are deterministic: the same text always gets the same fix.
+- The model stays loaded for 30 minutes of inactivity instead of 10, so a
+  normal working session no longer pays the ~1.5 s reload.
+- Local builds are Release by default (`make run`); Debug generated tokens
+  at a third of the speed.
+
+### Fixed
+- Question-shaped input ("report carries a bookingId?") was answered instead
+  of translated or corrected; code identifiers (bookingId, user_id) were
+  translated; terse messages were shortened or flattened from a question
+  into a statement.
+- Output no longer invents Markdown emphasis the input never had; it mirrors
+  the message's own formatting.
+
 ## v1.3.0 (2026-08-24)
 
 ### Features
