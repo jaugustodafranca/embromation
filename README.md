@@ -11,7 +11,7 @@ no account.
 
 - ⚡ First translated word in under a second (local LLM via MLX)
 - 🔒 Nothing ever leaves your Mac. The only network call is the one-time model download
-- 🎚️ Tone control (neutral / formal / casual) plus free-form instructions
+- 🎚️ Editable prompts: change how it translates and corrects, in plain language
 - 🛡️ Glossary of protected terms: "deploy", "commit" and "pipeline" stay put
 - 🌐 Auto-detected language pair: one hotkey translates both directions
 - ⌨️ Keyboard end to end: ⌃T translates, ⌘C copies, ⌘⏎ replaces in place
