@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.4.1 (2026-09-17)
+
+### Fixed
+- Correction now fixes wrong prepositions. "the channel was renanted for
+  #ops-alerts" used to come back with only the typo fixed ("renamed for");
+  it now reads "renamed to #ops-alerts", while legitimate uses like
+  "renamed for some reason" stay untouched. Also covers pairs like
+  "explained me" → "explained to me".
+
 ## v1.4.0 (2026-09-11)
 
 ### Features
