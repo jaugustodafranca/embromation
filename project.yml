@@ -59,8 +59,8 @@ targets:
         # 14.0 — weak-link so the binary still launches on older systems; all
         # uses sit behind @available checks in AppleFMTranslator.
         OTHER_LDFLAGS: ["$(inherited)", "-weak_framework", "FoundationModels"]
-        MARKETING_VERSION: 1.4.0
-        CURRENT_PROJECT_VERSION: 7
+        MARKETING_VERSION: 1.4.1
+        CURRENT_PROJECT_VERSION: 8
     dependencies:
       - package: TranslatorCore
       - package: KeyboardShortcuts
