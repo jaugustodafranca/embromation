@@ -71,6 +71,10 @@ public struct PromptBuilder: Sendable {
     \(formattingMirrorClause)
     """
 
+    // "wrong prepositions" carries the reported pair verbatim: with a
+    // generic example ("depend of" → "depend on") the model still left
+    // "renamed for #channel" alone; only the literal pair made it swap
+    // "for" → "to" while keeping the legitimate "renamed for some reason".
     // The examples teach what the rules alone couldn't: with every clause
     // in place, a 3-4B model still left typos unfixed, dropped leading
     // words and flattened questions into statements. Few-shot pairs (the
@@ -79,7 +83,7 @@ public struct PromptBuilder: Sendable {
     public static let defaultCorrectionTemplate = """
     You are a proofreading engine. Fix grammar, spelling and punctuation of the user's message, keeping the same language ({language}) and meaning.
     \(sourceIsContentClause(action: "correct"))
-    Fix every instance of: incorrect capitalization (sentence starts, proper nouns, acronyms like API), subject-verb agreement, missing or wrong punctuation, and misspelled words — even in short, casual, or technical messages.
+    Fix every instance of: incorrect capitalization (sentence starts, proper nouns, acronyms like API), subject-verb agreement, wrong prepositions (like "renamed for" instead of "renamed to"), missing or wrong punctuation, and misspelled words — even in short, casual, or technical messages.
     \(naturalRewordingClause)
     Keep the writer's tone and level of formality.
     \(completenessClause)

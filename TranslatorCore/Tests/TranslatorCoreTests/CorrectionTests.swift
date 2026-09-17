@@ -70,6 +70,19 @@ final class CorrectionTests: XCTestCase {
         XCTAssertTrue(p.contains("even in short, casual, or technical messages"))
     }
 
+    func testCorrectionPromptNamesWrongPrepositions() {
+        // Reported failure: "the channel was renanted for #ops-alerts" came
+        // back as "renamed for" — the typo fixed, the preposition kept. A
+        // wrong preposition is neither spelling nor agreement, and the
+        // "every word must survive" clause discourages swapping one; only
+        // naming the category (with the reported pair as the example)
+        // made the Instruct-2507 model change "for" to "to". A generic
+        // "misused words" wording did not.
+        let p = builder.correctionPrompt(language: .english, glossary: [])
+        XCTAssertTrue(p.contains("wrong prepositions"))
+        XCTAssertTrue(p.contains("\"renamed for\" instead of \"renamed to\""))
+    }
+
     func testAllPromptsMirrorTheInputsFormattingStyle() {
         // Markdown, Slack and WhatsApp each mark up text differently
         // (**bold** vs *bold*), and the model likes to decorate output with
